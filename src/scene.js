@@ -85,7 +85,7 @@ export class RaceScene{
  resize(){const w=this.container.clientWidth,h=this.container.clientHeight;if(!w||!h)return;this.camera.aspect=w/h;this.camera.updateProjectionMatrix();this.renderer.setSize(w,h);}
  quality(value){this.renderer.setPixelRatio(value==='high'?Math.min(devicePixelRatio,2):value==='low'?1:Math.min(devicePixelRatio,1.5));this.resize();}
  update(dt,clock){
-  if(!this.targetData)return;
+  if(!this.targetData||!this.displayData)return;
   const blend=1-Math.exp(-dt*22);for(let j=0;j<this.displayData.length;j++)this.displayData[j]+=(this.targetData[j]-this.displayData[j])*blend;
   const data=this.displayData,rank=this.ranking||[];let leader=rank.find(i=>!this.winnerIds.has(i));if(leader===undefined)leader=rank[0]||0;
   const leaderS=Math.max(0,data[leader*4+1]);this.focusS+=(leaderS-this.focusS)*(this.cameraReady?1-Math.exp(-dt*2.5):1);
