@@ -7,4 +7,4 @@ self.onmessage=({data:m})=>{
  if(m.type==='run'){running=true;last=performance.now();}
  if(m.type==='pause'){running=false;acc=0;send();}
 };
-setInterval(()=>{const now=performance.now();if(race&&running){acc+=Math.min((now-last)/1000,.15);let n=0;while(acc>=STEP&&n++<18){race.step();acc-=STEP;if(race.done){running=false;break;}}if(now-lastSent>45||!running){send();lastSent=now;}}last=now;},8);
+setInterval(()=>{const now=performance.now();if(race&&running){acc+=Math.min((now-last)/1000,.15);let n=0;while(acc>=STEP&&n++<18){race.step();acc-=STEP;if(race.done){running=false;break;}}if(now-lastSent>22||!running){send();lastSent=now;}}last=now;},8);

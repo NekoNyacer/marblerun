@@ -26,3 +26,6 @@ Target event computer and projector resolution unknown. First implementation is 
 
 ## Implementation authorization
 The user approved the latest concept and explicitly requested implementation, with browser version prioritized. The preview-only limitation is superseded. Initial application is now implemented with Three.js, Web Worker and local SheetJS import/export. Hotfix currently uses piston barriers; all five obstacle mechanics are documented in README.md.
+
+## Collision and track repair v2
+User requested collision/visual alignment, higher obstacle contrast, removal of floor/depth intersections, and added pegs. Shared world-space box/cylinder/sphere descriptors now drive rendering and physics; in-lane divider and support contacts are physical; perimeter frames stand outside guard rails. Five peg fields add 100 collidable pegs with rail clearance. Road-conforming geometry and biased decals address clipping/depth artifacts. Snapshot interpolation uses one timeline for machinery and marbles. Existing v1 replay source is retained.

@@ -61,6 +61,8 @@ Desktop uses a fixed header, expansive scene, 305px standings panel, and bottom 
 
 Scene depth comes from perspective, directional lighting, soft contact discs, reflective marble materials, acrylic rails, and atmospheric fog. UI panels remain flat and pale. Dialog and preparation overlays use diffuse downward shadows.
 
+Gameplay solids use deep green silhouettes and amber hazard stripes against a muted road surface. Support columns stand outside the rail, with a physical central divider inside the gate. Geometry conforms to the road height. Road decals use an explicit depth bias; hazard bands are material textures instead of overlapping box faces. Peg crowns sit above marble height with separated surfaces.
+
 ## Shapes
 
 Controls have restrained rounding; larger dialogs and the preparation overlay use a softer corner. Course mechanics use coherent cylindrical pivots, rectangular terminal screens, and continuous guard rails. The digital banyan remains the scene landmark.
