@@ -89,8 +89,10 @@ export class RaceScene{
   const blend=1-Math.exp(-dt*22);for(let j=0;j<this.displayData.length;j++)this.displayData[j]+=(this.targetData[j]-this.displayData[j])*blend;
   const data=this.displayData,rank=this.ranking||[];let leader=rank.find(i=>!this.winnerIds.has(i));if(leader===undefined)leader=rank[0]||0;
   const leaderS=Math.max(0,data[leader*4+1]);this.focusS+=(leaderS-this.focusS)*(this.cameraReady?1-Math.exp(-dt*2.5):1);
-  const p=position(this.focusS),lp=position(Math.min(FINISH+6,this.focusS+12));
-  if(this.view==='wide'){this.target.set(p[0]+15,p[1]+27,p[2]+27);this.look.set(lp[0],lp[1],lp[2]-8);}else{this.target.set(p[0]+7,p[1]+12.5,p[2]+18.5);this.look.set(lp[0],lp[1]+.8,lp[2]-3);}
+  const group=rank.filter(i=>!this.winnerIds.has(i)&&data[i*4+1]>leaderS-20).slice(0,8);
+  const groupX=group.reduce((total,i)=>total+data[i*4],0)/(group.length||1);this.focusX??=groupX;this.focusX+=(groupX-this.focusX)*(1-Math.exp(-dt*2));
+  const p=position(this.focusS),lp=position(Math.min(FINISH+6,this.focusS+2));
+  if(this.view==='wide'){this.target.set(p[0]+15,p[1]+27,p[2]+27);this.look.set(lp[0],lp[1],lp[2]-8);}else{this.target.set(p[0]+this.focusX*.65+4,p[1]+10.5,p[2]+15.5);this.look.set(lp[0]+this.focusX*.7,lp[1]+.6,lp[2]);}
   this.camera.position.lerp(this.target,this.cameraReady?1-Math.exp(-dt*3):1);this.camera.lookAt(this.look);this.cameraReady=true;
   this.camera.updateMatrixWorld();this.matrix.multiplyMatrices(this.camera.projectionMatrix,this.camera.matrixWorldInverse);this.frustum.setFromProjectionMatrix(this.matrix);
   let visible=0;const dummy=this.dummy;
