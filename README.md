@@ -8,6 +8,12 @@ Windows 已安裝 Node.js 時，雙擊 `開啟遊戲.cmd`，並保留啟動視�
 
 開發：`npm install`、`npm run dev`；正式建置：`npm run build`；核心測試：`npm test`。
 
+### GitHub Pages 展示
+
+推送到 `main` 後，GitHub Actions 會自動安裝套件、建置並發布到 Pages。此 repo 的網址格式為 `https://nekonyacer.github.io/marblerun/`。第一次請在 GitHub repo 的 **Settings → Pages** 將 **Build and deployment → Source** 設為 **GitHub Actions**；等 Actions 的 `Build and deploy GitHub Pages` 執行成功後即可用瀏覽器展示。觀看者不需要安裝 Node.js。
+
+若自行從原始碼建置：需要 Node.js 22（含 npm）與網路下載 npm 套件，執行 `npm ci`、`npm run build`。本機建置會使用 `/` 路徑；GitHub Actions 會使用 `/marblerun/` 路徑。
+
 ## 操作
 
 1. 使用預設 1,500 人示範賽，或按「匯入 Excel」。支援 .xlsx、.xls、.csv，可選工作表。
