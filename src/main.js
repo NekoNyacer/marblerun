@@ -64,7 +64,7 @@ function updateRanking(){
 }
 function paintStandings(){
  if(!state||!ranking.length)return;const leader=ranking[0],leadS=state.data[leader*4+1],winners=new Map(state.winners.map(w=>[w.i,w]));let html='';
- ranking.slice(0,10).forEach((i,n)=>{const p=participants[i],win=winners.get(i);const gap=win?'已得獎':['ready','countdown'].includes(phase)?'待出發':n===0?'領先':`+${Math.max(0,(leadS-state.data[i*4+1])/Math.max(4,state.data[i*4+3])).toFixed(2)}s`;
+ ranking.slice(0,10).forEach((i,n)=>{const p=participants[i],win=winners.get(i);const gap=win?'已得獎':['ready','countdown'].includes(phase)?'待出發':n===0?'領先':`+${Math.max(0,(leadS-state.data[i*4+1])/Math.max(4,state.data[leader*4+3])).toFixed(2)}s`;
   html+=`<div class="rank-row${n===0?' first':''}"><span class="rank-num">${n+1}</span><span class="marble-dot" style="--ball:${PALETTE[i%PALETTE.length]}"></span><div class="rank-person"><strong>${esc(p.name)}</strong><small>${esc(p.id)}${p.dept?' · '+esc(p.dept):''}</small></div><span class="rank-gap">${gap}</span></div>`;
   if(n+1===roundQuota()&&n<9)html+='<div class="prize-line">得獎線</div>';
  });$('#standings').innerHTML=html;
