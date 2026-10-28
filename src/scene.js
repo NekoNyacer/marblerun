@@ -10,6 +10,7 @@ import {WIDTH,RADIUS,FINISH,OBSTACLES,PALETTE,position,center,elevation} from '.
 const green=0x00894f,deep=0x075a40,ivory=0xf1f4e9,cyan=0x57d5c5;
 export class RaceScene{
  constructor(container,onStats,course=OBSTACLES){
+  this.graphics={MeshBasicMaterial:T.MeshBasicMaterial,BufferGeometry:T.BufferGeometry,Float32BufferAttribute:T.Float32BufferAttribute,SphereGeometry:T.SphereGeometry,TorusGeometry:T.TorusGeometry,IcosahedronGeometry:T.IcosahedronGeometry,CylinderGeometry:T.CylinderGeometry};
   this.container=container;this.onStats=onStats;this.scene=new T.Scene();this.scene.background=this.makeSky();this.scene.fog=new T.Fog('#b5dcd4',100,250);this.reducedMotion=globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches??false;
   this.renderer=new T.WebGLRenderer({antialias:true,powerPreference:'high-performance'});this.renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));this.renderer.setSize(container.clientWidth,container.clientHeight);this.renderer.outputColorSpace=T.SRGBColorSpace;this.renderer.toneMapping=T.ACESFilmicToneMapping;this.renderer.toneMappingExposure=1.05;container.appendChild(this.renderer.domElement);
   this.camera=new T.PerspectiveCamera(48,container.clientWidth/container.clientHeight,.35,280);
@@ -55,9 +56,9 @@ export class RaceScene{
  makeObstacle(o,k){const view=new ObstacleView(this,o,k);this.obstacles.push({s:o.s,view,group:view.group});}
  makeEnvironment(){this.city=new FutureCity(this.scene);this.holograms=new HologramNetwork(this.scene);}
  makeFinish(){createFinishMarkings(this);}
- setState(data,t,participants,ranking,winners){
+ setState(data,t,participants,ranking,winners,effects={}){
   if(!this.displayData||this.displayData.length!==data.length||t===0){this.displayData=new Float32Array(data);this.frames=[];}
-  this.frames??=[];if(this.frames.at(-1)?.t===t)this.frames.pop();this.frames.push({data,t});if(this.frames.length>8)this.frames.shift();this.lastStateAt=performance.now();this.targetData=data;this.t=t;this.participants=participants;this.ranking=ranking;this.winnerIds=new Set(winners.map(w=>w.i));
+  this.frames??=[];if(this.frames.at(-1)?.t===t)this.frames.pop();this.frames.push({data,t,vertical:effects.vertical});if(this.frames.length>8)this.frames.shift();this.lastStateAt=performance.now();this.targetData=data;this.t=t;this.participants=participants;this.ranking=ranking;this.winnerIds=new Set(winners.map(w=>w.i));this.racerStatus=effects.status;this.mechanismStates=new Map((effects.mechanismStates??[]).map(value=>[value.id,value]));
  }
  resize(){const w=this.container.clientWidth,h=this.container.clientHeight;if(!w||!h)return;this.camera.aspect=w/h;this.camera.updateProjectionMatrix();this.renderer.setSize(w,h);}
  quality(value){
@@ -82,23 +83,23 @@ export class RaceScene{
   this.camera.updateMatrixWorld();this.matrix.multiplyMatrices(this.camera.projectionMatrix,this.camera.matrixWorldInverse);this.frustum.setFromProjectionMatrix(this.matrix);
   let visible=0;const dummy=this.dummy;
   for(let i=0;i<data.length/4;i++){
-   let x=data[i*4],s=data[i*4+1];if(s<this.focusS-45||s>this.focusS+110)continue;const corrected=projectVisualBall(center(s)+x,s,frameGroups);s=corrected.s;x=corrected.wx-center(s);data[i*4]=x;data[i*4+1]=s;
-   const p=position(s,x);this.sphere.center.set(p[0],p[1]+RADIUS,p[2]);if(!this.frustum.intersectsSphere(this.sphere))continue;
+   if(this.racerStatus?.[i]===1)continue;let x=data[i*4],s=data[i*4+1];if(s<this.focusS-45||s>this.focusS+110)continue;const corrected=(this.racerStatus?.[i]??0)===0?projectVisualBall(center(s)+x,s,frameGroups):{wx:center(s)+x,s};s=corrected.s;x=corrected.wx-center(s);data[i*4]=x;data[i*4+1]=s;
+   const p=position(s,x),vertical=(lower.vertical?.[i]??0)*(1-alpha)+(upper.vertical?.[i]??0)*alpha;this.sphere.center.set(p[0],p[1]+RADIUS+vertical,p[2]);if(!this.frustum.intersectsSphere(this.sphere))continue;
    dummy.position.copy(this.sphere.center);dummy.rotation.set(-s/RADIUS,x/RADIUS,0);dummy.scale.setScalar(1);dummy.updateMatrix();this.balls.setMatrixAt(visible,dummy.matrix);this.color.set(PALETTE[i%PALETTE.length]);this.balls.setColorAt(visible,this.color);
-   dummy.position.y=p[1]+.035;dummy.rotation.set(-Math.PI/2,0,0);dummy.scale.set(1,.8,1);dummy.updateMatrix();this.shadows.setMatrixAt(visible,dummy.matrix);visible++;
+   dummy.position.y=p[1]+.035;dummy.rotation.set(-Math.PI/2,0,0);dummy.scale.setScalar((this.racerStatus?.[i]??0)>1?0:1);dummy.updateMatrix();this.shadows.setMatrixAt(visible,dummy.matrix);visible++;
   }
   this.balls.count=visible;this.shadows.count=visible;this.balls.instanceMatrix.needsUpdate=true;this.shadows.instanceMatrix.needsUpdate=true;if(this.balls.instanceColor)this.balls.instanceColor.needsUpdate=true;
   
   const w=this.container.clientWidth,h=this.container.clientHeight,rects=[];
   for(let n=0;n<this.labels.length;n++){
    const el=this.labels[n],i=rank[n];if(i===undefined){el.hidden=true;continue;}const s=data[i*4+1],p=position(s,data[i*4]);this.v.set(p[0],p[1]+1.25,p[2]).project(this.camera);const xx=(this.v.x*.5+.5)*w,yy=(-this.v.y*.5+.5)*h;const overlap=rects.some(r=>Math.abs(r.x-xx)<115&&Math.abs(r.y-yy)<48);
-   const hidden=this.v.z>1||this.v.z<0||xx<60||xx>w-60||yy<145||yy>h-65||overlap;el.hidden=hidden;if(hidden)continue;rects.push({x:xx,y:yy});el.style.left=xx+'px';el.style.top=yy+'px';el.style.setProperty('--racer',PALETTE[i%PALETTE.length]);el.textContent=`${n+1} ${this.participants[i]?.name||''}`;
+   const hidden=this.v.z>1||this.v.z<0||xx<60||xx>w-60||yy<80||yy>h-65||overlap;el.hidden=hidden;if(hidden)continue;rects.push({x:xx,y:yy});el.style.left=xx+'px';el.style.top=yy+'px';el.style.setProperty('--racer',PALETTE[i%PALETTE.length]);el.textContent=`${n+1} ${this.participants[i]?.name||''}`;
   }
   this.renderer.render(this.scene,this.camera);this.onStats?.(visible);
  }
  updateObstacles(t){
   const poses=courseShapes(t,this.course),groups=[];
-  this.obstacles.forEach((obstacle,k)=>{const pose=poses[k];obstacle.group.visible=Math.abs(obstacle.s-this.focusS)<130+pose.reach;if(obstacle.group.visible){obstacle.view.update(t,pose.shapes);groups.push(pose);}});
+  this.obstacles.forEach((obstacle,k)=>{const pose=poses[k];obstacle.group.visible=Math.abs(obstacle.s-this.focusS)<130+pose.reach;if(obstacle.group.visible){obstacle.view.runtime=this.mechanismStates?.get(pose.o.id);obstacle.view.update(t,pose.shapes);groups.push(pose);}});
   return groups;
  }
  dispose(){

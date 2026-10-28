@@ -55,7 +55,7 @@ Self-hosted Noto Sans TC Variable handles Traditional Chinese UI and participant
 
 ## Layout
 
-Desktop uses a fixed header, expansive scene, 305px standings panel, and bottom control strip. Above 1600px the standings panel grows to 355px. Below 760px the scene stacks above standings and controls stay visible at the bottom. The ticker occupies the upper scene; name flags and foreground racing remain unobstructed.
+Desktop uses a fixed header, expansive scene, 305px standings panel, and bottom control strip. Above 1600px the standings panel grows to 355px. Below 760px the scene stacks above standings and controls stay visible at the bottom. The ticker, race status/timer and course name share one compact upper-scene row. The brand is one official SVG image, preserving its internal text layout at every width. Name flags and foreground racing remain unobstructed.
 
 ## Elevation & Depth
 
@@ -86,3 +86,11 @@ The ticker has a fixed green label and a moving single-line event message, respe
 The road is one surface with UV-driven cyan light lanes and flowing highlights; it adds no bloom or full-screen compositing pass. Rails, glass panes, support columns and finish markings use shared/merged batches. The ten-batch city uses window material patterns instead of window meshes and vertex-lit diffuse materials for skyline/foliage. Holograms use one static 1024×512 icon atlas and three instanced draws: billboards, projection cones and base rings. There are no additional dynamic lights, shadows or particle simulations.
 
 Pictograms depict decorative cloud, leaf, shield, card and code services, not live race state. They sit outside the racing surface and below the upper ticker. Decorative motion updates shared uniforms; reduced-motion preference freezes it. Low quality retains road lights and icons while omitting distant cloud/edge accents and projection cones/rings. Marble tessellation follows quality without changing ball radius or physics.
+
+## Visual course composition and hazard states
+
+The course manager shows twelve fixed stations with miniature mechanism diagrams and a focused selection palette. Hosts choose hardware or an empty straight, not geometry values. Existing free-position tracks stay playable until the host explicitly creates a fixed-position copy. Permanent elimination and Node.js fill traps are identified before a race.
+
+Amber side pinball flippers sweep upstream at staggered, irregular times. Dark pits, fill indicators, a rising Java bridge and the .NET hourglass communicate actual Worker state; the 418 teapot uses three reusable steam puffs. Temporary captures remain contenders. Permanent losses leave the ranking and count toward a clearly explained prize shortfall.
+
+Original locally synthesized 140 BPM party music accompanies countdown, racing and a short finish cadence. The combined music/effects button starts muted and requires a user gesture; pause, hidden tabs and reset stop scheduled music.

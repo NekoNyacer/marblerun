@@ -24,9 +24,11 @@ test('every component keeps stable solid identities and dimensions through its a
 });
 
 test('new moving arms apply the velocity of their actual animated contact surface',()=>{
- const t=3.17,dt=1e-5;
+ const dt=1e-5;
  for(const type of ['scope-change','handoff','code-review']){
-  const o=entry(type,164,2),before=obstacleShapes(o,0,t-dt),after=obstacleShapes(o,0,t+dt);
+  const o=entry(type,164,2);let t=3.17;
+  if(type==='code-review')for(t=.05;t<20;t+=.013)if(obstacleShapes(o,0,t).some(shape=>Math.abs(shape.omega)>1))break;
+  const before=obstacleShapes(o,0,t-dt),after=obstacleShapes(o,0,t+dt);
   const current=obstacleShapes(o,0,t).filter(shape=>shape.omega);
   assert.ok(current.length);
   for(const shape of current){
@@ -81,5 +83,23 @@ test('each new mechanism allows isolated entrants across lanes and animation pha
   while(!race.done&&race.t<120)race.step();
   assert.ok(race.done,`${type}: x=${x}, phase=${phase} trapped at ${race.s[0]}, ${race.x[0]}`);
   assert.ok(race.x.every(Number.isFinite));
+ }
+});
+
+
+test('Code Review flippers leave a narrow central opening and strike upstream from both sides',()=>{
+ const o=entry('code-review',100,0),stationary=obstacleShapes(o,0,0).filter(s=>s.role==='code-review');
+ const endpoints=stationary.map(shape=>shape.wx-center(100)+(shape.wx<center(100)?1:-1)*shape.w/2*Math.cos(shape.angle));
+ assert.ok(endpoints[1]-endpoints[0]>1&&endpoints[1]-endpoints[0]<3);
+ for(const side of [-1,1]){
+  let t=0,shape;
+  for(;t<40;t+=.007){shape=obstacleShapes(o,0,t).find(s=>s.role==='code-review'&&Math.sign(s.wx-center(100))===side);if(shape.omega*side>2)break;}
+  assert.ok(t<40,'paddle never flicks');
+  const u=-side*shape.w*.3,normal={nx:Math.sin(shape.angle),ns:-Math.cos(shape.angle)};
+  const wx=shape.wx+u*Math.cos(shape.angle)+normal.nx*(shape.d/2+.2),s=shape.s+u*Math.sin(shape.angle)+normal.ns*(shape.d/2+.2);
+  assert.ok(surfaceVelocity(shape,wx,s).vs<-5,'paddle does not move upstream');
+  const race=new RaceSimulation(1,1,7,[o,finish]);race.t=t;race.setWorld(0,wx,s);race.previousX[0]=wx;race.previousS[0]=s;race.vs[0]=5;
+  race.resolveObstacles(0,[{o,shapes:[shape],reach:15}]);
+  assert.ok(race.vs[0]<0,`side ${side} did not knock marble backwards`);
  }
 });

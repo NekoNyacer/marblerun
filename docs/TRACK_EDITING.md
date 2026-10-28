@@ -1,106 +1,68 @@
 # 編輯賽道與機關
 
-日常調整可直接使用網頁的「賽道」管理介面，操作方式見下方「瀏覽器內的賽道庫」。開發時也可編輯 `src/course-config.js` 的 `COURSE_CONFIG` 作為內建預設。每筆資料代表一個機關實例；同一種元件可以放置多次，各自設定位置與參數。賽道會依 `s` 自動排序，畫面與模擬共用這份設定。
+按頁首「賽道」，選一條內建主題賽道，就能直接開賽。主辦方也能點選路線上的任一站，再從機關圖示中挑選這一站要放什麼。選「空白直線」即可留下一段衝刺空間。
 
-```js
-{
- id: 'deadline-extra',       // 唯一且穩定的識別碼，複製機關時請更換
- s: 390,                    // 沿賽道的位置，0～430
- type: 'sprint',             // 下表的元件名稱
- label: '最後一個 Sprint',    // 賽道招牌、進度與碰撞速報名稱
- phase: 22,                 // 動畫相位；搬動或重排時保留原值
- enabled: true,             // false 暫時停用；省略視為啟用
- params: {period: 12}        // 只填想覆寫的參數，其餘沿用元件 defaults
-}
-```
+所有新賽道共用 12 個固定位置：`26, 59, 92, 125, 158, 191, 224, 257, 290, 323, 356, 389`。終點固定在 `430`。編輯器已設定位置、大小與運作方式，不需要輸入數字或 JSON 參數。位置按鈕可用鍵盤上下方向鍵切換。
 
-修改 `s` 即可搬動機關；複製一筆並給新 `id` 可增加機關。不同機關請保留間距，避免碰撞區重疊而堵住出口。`phase` 不依陣列順序決定，因此插入新機關不會改變其他機關的動作相位。終點須保留唯一的 `finish`，位置固定在 `430`。
+## 內建主題
 
-可選的 `x` 是橫向偏移，預設 `0`。`scope-change` 與 `ux-flow` 的導流板必須銜接護欄，請保持 `x: 0`。透過賽道管理介面儲存並使用會立即套用；透過原始碼修改內建預設時，需重新建置與載入。
+- 未來城市・全機關嘉年華：一次體驗所有新機關。
+- 經典 IT 賽道：碰撞柱、升降障礙與計時閘門。
+- 輕量暖身賽道：六站機關，保留較多衝刺空間。
+- HTTP 狀態碼大亂鬥：500、429、404 與 418 輪番上場。
+- 全員加班・漏洞修復夜：Node.js、Java 與 .NET 漏洞接力。
+- Code Review 太空彈珠台：多組雙側回擊推板，搭配旋轉板與撞球。
+- 需求又改了・設計衝刺：需求變更、UX 迷宮與設計交付。
+- 落後才有機會・逆轉大道：填坑與沙漏讓領先順序反覆改寫。
 
-## 元件與預設參數
+404 死路會淘汰彈珠；Node.js 小洞會留下先落入的彈珠作為填洞材料。編輯器會在圖示、機關說明與賽道摘要中標示這兩種風險。Java 大洞會在填滿後把坑內彈珠全部推出，.NET 沙漏則會在旋轉等待後重新放行。
 
-各元件均位於 `src/components/obstacles/`，檔名為下表的 `type` 加上 `.js`。距離使用賽道世界單位，時間使用模擬秒，旋轉角度使用弧度。`params` 採第一層覆寫，提供 `rows` 時會替換整個陣列。
+## 儲存、匯入與舊賽道
 
-| type | 機關 | defaults |
-| --- | --- | --- |
-| `gate` | Credits／Prompt／Fallback 交替閘門 | `period:10, switchDuration:0.4, warningLead:0.85, laneX:5, barWidth:9.1, lift:2.1, dividerLength:5` |
-| `rotor` | Merge Conflict 旋轉擋板 | `length:15, speed:0.8, thickness:0.6` |
-| `rate` | 429 限流閘門 | `period:3.8, closedDuration:2, transition:0.2, laneCount:4, laneSpacing:5, barWidth:4.05, phaseSpacing:0.65, lift:2.1` |
-| `error` | 500 Error／Hotfix 活塞 | `count:3, spacing:6, speed:1.25, phaseSpacing:2, width:3.3, lift:1.7` |
-| `pendulum` | Timeout／Final Test 撞球 | `amplitude:7, speed:1.3, radius:1.05` |
-| `pegs` | Debug／Packet Router／Load Balancer 柱陣 | `rows:[[-8,-4,0,4,8],[-6,-2,2,6],[-8,-4,0,4,8],[-8.5,-5.1,-1.7,1.7,5.1,8.5]], rowSpacing:3.1, radius:0.43, height:1.15` |
-| `finish` | 終點拱門 | 無參數 |
-| `scope-change` | 需求變更轉向板 | `wallX:10.5, innerX:2.7, guideDepth:4, guideSpacing:6, height:0.95, thickness:0.65, bladeWidth:5.4, swing:0.48, speed:0.5` |
-| `sprint` | Sprint 截止閘門 | `period:9, transition:0.4, warning:0.65, laneWidth:20/3, barHeight:0.7, barDepth:0.65, lift:2.1` |
-| `ux-flow` | UX Flow 圓角卡片迷宮 | `wallX:10.7, innerX:2.6, spacing:5.5, guideDepth:3.6, height:1.25, thickness:0.7` |
-| `handoff` | 設計交付平衡旋臂 | `width:13, depth:0.75, height:0.85, swing:0.64, speed:0.45, pivotRadius:0.55` |
-| `code-review` | Code Review 分流器 | `armLength:5.5, depth:0.65, height:0.85, opening:0.68, swing:0.35, speed:0.55, spacing:3.8` |
+編輯名稱或機關後，按「儲存並使用」套用本場；「另存新賽道」建立個人副本。內建賽道保留不變，修改後會存成個人賽道。比賽倒數、進行或暫停期間，請先重新準備賽事才能切換。
 
-例如，降低 `rotor.params.speed` 會減慢旋轉；增加 `sprint.params.period` 會拉長放行週期；`pegs.params.rows` 的每列數字是柱子的橫向位置。動態機關的 `speed` 表示動畫角速度；`swing` 表示來回擺動幅度。
+舊版自由位置的自訂賽道仍可直接使用與匯出，原本的參數與停用機關會完整保留。編輯器會顯示原配置；按「建立固定位置副本」並確認後，才會建立新的 12 站版本。超過 12 個機關時會依原本順序均勻保留 12 個，使用各機關預設設定，略過數量會在確認訊息中顯示。原賽道不會被覆寫。
 
-護欄、機關寬度與通道間距必須一起考量。調整 `lift` 時需讓升起的障礙物完全離開彈珠高度；增大柱子或卡片時需保留可通行的出口。需求轉向板與 UX 卡片從護欄引導到內側，目的是中斷貼邊直通路徑。設計交付機關使用平面擺動旋臂呈現平衡感，現行物理模型不包含垂直蹺蹺板、跳台或自由落體。
+每個網站網址下的 localStorage 保存最多 50 條個人賽道與上次選擇。「匯出 JSON」下載目前草稿；在另一個瀏覽器或部署網址按「匯入賽道 JSON」，即可建立獨立存檔。匯入不會覆蓋原有存檔。檔案上限 512 KB，仍支援原有 `format: "marblerun-course"`、`version: 1` 格式及最多 128 個機關。得獎紀錄與賽道 JSON 用途不同。
 
-## 新增一種元件
+localStorage 不會跨瀏覽器或跨網址同步；清除網站資料也會刪除個人賽道。儲存失敗時草稿會保留，可先匯出備份。
 
-1. 在 `src/components/obstacles/` 建立獨立模組，預設匯出元件定義。
-2. 在同目錄的 `index.js` 匯入模組，加入 `OBSTACLE_COMPONENTS` 的定義清單。
-3. 在 `src/course-config.js` 加入使用新 `type` 的實例。
+## 開發者：獨立機關元件
 
-```js
-// src/components/obstacles/example.js
-export default {
- type: 'example',
- label: '示範擋板',
- defaults: {width: 5, depth: 0.6, height: 0.9},
- build(ctx, p, t, phase) {
-  ctx.box('panel', 0, 0, 0.04, p.height, p.width, p.depth,
-   {role: 'panel', materialKey: 'amber'});
- },
- decorate(view, p) {
-  view.sign(view.o.label, -12, 3.2, 5, 'EXAMPLE');
- },
- update(view, t, shapes, p) {
-  // 可選：更新招牌等非碰撞裝飾；機關本體的運動須放在 build。
- }
-};
-```
+`src/course-slots.js` 定義固定位置、編輯器說明與機關圖示資料。`src/course-library.js` 定義可選的內建主題。`src/course-config.js` 保留自由配置的原始範例。
 
-`build(ctx, params, t, phase)` 定義遊戲實體；繪圖和碰撞都讀取其結果。`ctx.box(id,x,ds,y,h,w,d,props)` 建立長方體，`ctx.add(id,kind,x,ds,y,h,props)` 支援 `circle` 圓柱與 `sphere` 球體。`x`、`ds` 相對機關原點；`y` 是距路面的底部高度。`trackBox`、`trackAdd` 會依 `ds` 處的彎道中心修正橫向位置，適合分散排列的柱陣。移動形狀需提供正確的 `angle`、`omega`、`vx`、`vs`，才能計算接觸面的速度。
+所有機關模組位於 `src/components/obstacles/`，由 `index.js` 註冊。每個元件擁有 `type`、`label`、`defaults`、`build`，以及可選的 `decorate`、`update`、`notice`。
 
-每個實例的形狀數量、種類、尺寸與形狀 ID 在運行中須保持穩定；切換開關以高度或位置移動實體。`materialKey` 可選 `white`、`green`、`deep`、`metal`、`light`、`glass`、`amber` 或 `hazard`。有碰撞的可見實體必須透過建構器定義；`decorate` 用來建立招牌與高處裝飾，`update` 更新這些裝飾。請勿在裝飾中另畫未定義碰撞的低矮擋板。
+| type | 機關 |
+| --- | --- |
+| `gate` | Credits 雙通道交替閘門 |
+| `rotor` | Merge Conflict 旋轉擋板 |
+| `rate` | 429 Rate Limit 限流閘門 |
+| `error` | 500 Error 升降障礙 |
+| `pendulum` | Timeout 擺錘 |
+| `pegs` | Debug 碰撞柱陣 |
+| `scope-change` | 需求變更轉向板 |
+| `sprint` | Sprint 截止閘門 |
+| `ux-flow` | UX 卡片迷宮 |
+| `handoff` | 設計交付擺臂 |
+| `code-review` | Code Review 雙側回擊推板 |
+| `not-found` | 404 淘汰死路 |
+| `teapot` | 418 茶壺蒸氣 |
+| `node-hole` | Node.js 小漏洞 |
+| `java-hole` | Java 全幅漏洞 |
+| `dotnet-hole` | .NET 旋轉沙漏 |
+| `finish` | Deploy 終點 |
 
-通用層分工：`src/course.js` 合併預設參數並驗證設定；`src/obstacles.js` 產生實體並提供碰撞運算；`src/obstacle-view.js` 繪製相同實體；`src/track-geometry.js` 定義賽道寬度、曲線與坡面。
+`build(ctx, params, t, phase)` 定義實體形狀，繪圖與碰撞共用其結果。`ctx.box(id,x,ds,y,h,w,d,props)` 建立長方體；`ctx.add` 支援圓柱與球體。形狀的種類、數量、尺寸與 ID 在運行中須保持穩定；動態碰撞面需提供正確的 `angle`、`omega`、`vx`、`vs`。裝飾不可另畫未定義碰撞的低矮擋板。
 
-## 驗證與重播
-
-```sh
-npm test
-npm run build
-```
-
-測試後仍需實際觀察新通道是否能讓大批彈珠通過，以及招牌是否遮擋領先群。正式活動請在現場電腦以 1,500 人、完整得獎名額排演。
-
-新版下載的賽事 JSON 包含 `model`、`seed` 與 `course` 設定快照，重播使用紀錄中的賽道，不會套用目前編輯中的配置：
+洞穴與淘汰行為由模擬執行，畫面讀取同一份機關狀態；得獎順序仍以實際過線決定。下載的賽事紀錄包含賽道配置、物理版本與種子，重播使用紀錄快照：
 
 ```sh
 node scripts/replay.mjs "賽事紀錄-種子.json"
 ```
 
-v1、v2 引擎保留在 `src/legacy/`。若未來改變元件的物理行為，請保留原版引擎／元件實作並提升 `MODEL_VERSION`；設定快照不能取代舊版物理程式碼。
-
-## 瀏覽器內的賽道庫
-
-按頁首「賽道」即可選擇三條內建賽道或自己的存檔。編輯名稱、機關位置、類型、啟用狀態與進階參數後，選「儲存並使用」套用；也能另存副本。內建賽道會保留，編輯後儲存為自訂賽道。機關依位置排序，終點固定於 430。套用後畫面、模擬與賽道速報共用選定配置。
-
-每個網站網址下的 localStorage 保存最多 50 條自訂賽道與上次選擇；重新載入會還原。比賽進行、暫停與倒數期間會鎖定切換與編輯，請先「重新準備」再改賽道。尚未儲存的修改在關閉或切換時會提示保留／捨棄。
-
-「匯出 JSON」下載目前編輯的賽道；到其他瀏覽器或另一個部署網址按「匯入 JSON」即可建立新存檔，再使用該賽道。匯入不會覆蓋原有存檔。檔案上限 512 KB，最多 128 個機關，包含停用的機關與完整預設參數。格式使用 `format: "marblerun-course"`、`version: 1`。得獎紀錄 JSON 與賽道 JSON 用途不同，請用賽道面板匯出的檔案。
-
-localStorage 不會自動跨瀏覽器或跨網址同步；清除網站資料也會刪除本機賽道，請透過匯出備份。儲存失敗時草稿仍保留，可先匯出。任意編輯可能形成堵塞或讓比賽變慢，正式使用前請跑示範賽檢查通行狀況。
+更改機關物理行為時須保留舊版引擎並提升 `MODEL_VERSION`，設定快照不能取代舊版物理程式碼。
 
 ## GitHub Pages 純靜態部署
 
-不需要後端、資料庫或 API 金鑰。`npm ci` 後執行 `npm run build`，部署產出的 `dist/` 即可。`vite.config.js` 使用相對資源路徑，支援 `https://帳號.github.io/專案名稱/` 與自訂網域。
-
-專案附 `.github/workflows/pages.yml`：推送至 GitHub 的 `main` 分支後，到儲存庫 Settings → Pages → Build and deployment，將 Source 設為 **GitHub Actions**，即可使用工作流程建置並部署。這個流程僅發布靜態檔案，賽道與得獎紀錄依然只在各訪客的瀏覽器儲存。
+不需要後端、資料庫或 API 金鑰。`npm ci` 後執行 `npm run build`，發布 `dist/` 即可。Vite 使用相對資源路徑，支援 GitHub Pages 專案子路徑與自訂網域。Pages 工作流程會在 `main` 更新時建置發布；賽道、名單與得獎紀錄仍保存在各訪客瀏覽器。

@@ -10,8 +10,13 @@ import sprint from './sprint.js';
 import uxFlow from './ux-flow.js';
 import handoff from './handoff.js';
 import codeReview from './code-review.js';
+import notFound from './not-found.js';
+import teapot from './teapot.js';
+import nodeHole from './node-hole.js';
+import javaHole from './java-hole.js';
+import dotnetHole from './dotnet-hole.js';
 
-export const OBSTACLE_COMPONENTS = Object.freeze(Object.fromEntries([gate, rotor, rate, error, pendulum, pegs, finish, scopeChange, sprint, uxFlow, handoff, codeReview].map(def => [def.type, def])));
+export const OBSTACLE_COMPONENTS = Object.freeze(Object.fromEntries([gate, rotor, rate, error, pendulum, pegs, finish, scopeChange, sprint, uxFlow, handoff, codeReview, notFound, teapot, nodeHole, javaHole, dotnetHole].map(def => [def.type, def])));
 
 export function getObstacleDefinition(type) {
  const def = Object.hasOwn(OBSTACLE_COMPONENTS,type) ? OBSTACLE_COMPONENTS[type] : null;

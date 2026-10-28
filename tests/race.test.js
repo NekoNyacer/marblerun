@@ -26,6 +26,8 @@ test('1500 entrants complete a five-winner race with unique chronological result
 test('one-person round starts at course center and reaches finish',()=>{
  const race=new RaceSimulation(1,1,99);assert.equal(race.x[0],0);while(!race.done&&race.t<240)race.step();assert.ok(race.done);assert.equal(race.winners[0].i,0);
 });
-test('full 1500-person winner quota does not leave anyone trapped behind gates',()=>{
- const race=new RaceSimulation(1500,1500,82);while(!race.done&&race.t<240)race.step();assert.ok(race.done);assert.equal(race.winners.length,1500);assert.equal(new Set(race.winners.map(w=>w.i)).size,1500);
+test('full 1500-person winner quota eventually clears the upstream flippers and gates',()=>{
+ // The double flipper deliberately returns dense packs upstream; awarding every
+ // entrant takes longer than an ordinary five-winner draw, but must still end.
+ const race=new RaceSimulation(1500,1500,82);while(!race.done&&race.t<420)race.step();assert.ok(race.done,`${race.winners.length}/1500 finished at ${race.t.toFixed(1)}s`);assert.equal(race.winners.length,1500);assert.equal(new Set(race.winners.map(w=>w.i)).size,1500);
 });

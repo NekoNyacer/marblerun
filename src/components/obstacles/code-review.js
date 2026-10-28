@@ -1,23 +1,25 @@
+import {smooth} from './shared.js';
+const noise=n=>{const v=Math.sin(n*127.1+311.7)*43758.5453;return v-Math.floor(v);};
+export function reviewStroke(t,side,phase=0,speed=1){
+ const clock=t*speed+phase*.19,slot=Math.floor(clock/4.8);
+ for(let k=slot-1;k<=slot;k++){
+  const key=k*13+phase*7+(side<0?19:47);if(noise(key+5)<.17)continue;
+  const age=clock-(k*4.8+.15+noise(key)*2.8);if(age<0||age>.96)continue;
+  if(age<.14){const u=age/.14;return {value:smooth(u),velocity:6*u*(1-u)/.14*speed};}
+  if(age<.24)return {value:1,velocity:0};
+  const u=(age-.24)/.72;return {value:1-smooth(u),velocity:-6*u*(1-u)/.72*speed};
+ }return {value:0,velocity:0};
+}
 export default {
- type:'code-review',label:'Code Review 分流器',
- defaults:{armLength:5.5,depth:.65,height:.85,opening:.68,swing:.35,speed:.55,spacing:3.8},
- build(ctx,p,t,phase){
-  const clock=t*p.speed+phase*.7;
-  // Two short, opposed fork stages. Each arm rotates around its outer post,
-  // so the descriptor includes both angular and centre velocity.
-  for(let stage=0;stage<2;stage++)for(const side of [-1,1]){
-   const ds=(stage-.5)*p.spacing*2,px=side*5.2;
-   const sign=stage? -1:1;
-   const angle=side*(p.opening+sign*p.swing*Math.sin(clock));
-   const omega=side*sign*p.swing*p.speed*Math.cos(clock);
-   const half=p.armLength/2,offset=-side*half;
-   const x=px+offset*Math.cos(angle),s=ds+offset*Math.sin(angle);
-   ctx.add(`pivot${stage}-${side}`,'circle',px,ds,0,1.8,{r:.35,role:'post',materialKey:'metal'});
-   ctx.box(`review${stage}-${side}`,x,s,.04,p.height,p.armLength,p.depth,{angle,omega,vx:-offset*Math.sin(angle)*omega,vs:offset*Math.cos(angle)*omega,role:'code-review',materialKey:stage?'amber':'deep'});
-  }
- },
- decorate(view){
-  view.sign('CODE REVIEW',-12.5,3.4,5.8,view.o.label);
-  view.host.cylinder(.13,2.5,view.host.materials.metal,-12.5,1.25,0,view.decor);
- }
+ type:'code-review',label:'Code Review 回擊推板',
+ defaults:{armLength:8.8,depth:.85,height:1.05,opening:.25,swing:.88,speed:1,spacing:3.8},
+ build(ctx,p,t,phase){for(const side of [-1,1]){
+  const pivot=side*9.65,length=Math.max(8.6,p.armLength),stroke=reviewStroke(t,side,phase,p.speed);
+  const angle=side*(-Math.min(.38,p.opening)+Math.max(.8,p.swing)*stroke.value),omega=side*Math.max(.8,p.swing)*stroke.velocity;
+  const offset=-side*length/2,x=pivot+offset*Math.cos(angle),ds=offset*Math.sin(angle);
+  ctx.add(`pivot-${side}`,'circle',pivot,0,0,1.65,{r:.43,role:'post',materialKey:'metal'});
+  ctx.box(`flipper-${side}`,x,ds,.04,p.height,length,p.depth,{angle,omega,vx:-offset*Math.sin(angle)*omega,vs:offset*Math.cos(angle)*omega,role:'code-review',materialKey:side<0?'amber':'green'});
+ }},
+ decorate(view){view.sign('CODE REVIEW',-12.9,3.6,6,'雙側回擊 · 瞄準中央');view.host.cylinder(.13,2.7,view.host.materials.metal,-12.9,1.35,0,view.decor);},
+ notice(t,phase,p){return [-1,1].some(side=>reviewStroke(t,side,phase,p.speed).velocity>1)?{key:'flipping',text:'Code Review 推板回擊！走正中央，或抓準回板空檔。'}:null;}
 };

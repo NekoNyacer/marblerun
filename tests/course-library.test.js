@@ -10,9 +10,9 @@ class MemoryStorage {
 }
 const draft = (library,name='測試賽道') => ({name,obstacles:library.selected.obstacles});
 
-test('three built-in courses remain immutable and callers receive independent copies',()=>{
+test('built-in courses remain immutable and callers receive independent copies',()=>{
  const library=new CourseLibrary(new MemoryStorage());
- assert.equal(library.list().length,3);assert.ok(library.list().every(course=>course.builtin));
+ assert.equal(library.list().length,BUILTIN_COURSES.length);assert.ok(library.list().every(course=>course.builtin));
  const selected=library.selected;selected.name='changed';selected.obstacles[0].label='changed';
  assert.notEqual(library.selected.name,'changed');assert.notEqual(library.selected.obstacles[0].label,'changed');
  assert.ok(Object.isFrozen(BUILTIN_COURSES[0].obstacles[0].params));
@@ -27,17 +27,17 @@ test('custom tracks and selection survive reload, updates, and deletion atomical
  assert.equal(restored.selectedId,saved.id);assert.deepEqual(restored.selected,saved);
  const edited=restored.save({id:saved.id,...draft(restored,'更新賽道')});assert.equal(edited.id,saved.id);
  assert.equal(new CourseLibrary(storage).selected.name,'更新賽道');
- restored.delete(saved.id);assert.equal(restored.selectedId,BUILTIN_COURSES[0].id);assert.equal(new CourseLibrary(storage).list().length,3);
+ restored.delete(saved.id);assert.equal(restored.selectedId,BUILTIN_COURSES[0].id);assert.equal(new CourseLibrary(storage).list().length,BUILTIN_COURSES.length);
 });
 test('export and import transfer resolved parameters and disabled obstacles between browsers',()=>{
  const source=new CourseLibrary(new MemoryStorage()),target=new CourseLibrary(new MemoryStorage());
- const value=draft(source,'跨瀏覽器');value.obstacles[0].enabled=false;value.obstacles[2].params.speed=.23;
+ const value=draft(source,'跨瀏覽器');value.obstacles[0].enabled=false;value.obstacles.find(o=>o.type==='scope-change').params.speed=.23;
  const saved=source.save(value);const envelope=source.exportCourse(saved.id);
  const imported=target.importCourse(JSON.stringify(envelope));
  assert.equal(imported.name,saved.name);assert.deepEqual(imported.obstacles,saved.obstacles);assert.notEqual(imported.id,saved.id);
- assert.equal(imported.obstacles[0].enabled,false);assert.equal(imported.obstacles[2].params.speed,.23);
+ assert.equal(imported.obstacles[0].enabled,false);assert.equal(imported.obstacles.find(o=>o.type==='scope-change').params.speed,.23);
  const duplicate=target.importCourse(JSON.stringify(envelope));assert.notEqual(duplicate.id,imported.id);
- assert.equal(target.list().length,5);assert.equal(target.selectedId,BUILTIN_COURSES[0].id);
+ assert.equal(target.list().length,BUILTIN_COURSES.length+2);assert.equal(target.selectedId,BUILTIN_COURSES[0].id);
 });
 test('invalid, unsupported, malicious, and oversized imports leave storage unchanged',()=>{
  const storage=new MemoryStorage(),library=new CourseLibrary(storage);library.save(draft(library));
@@ -65,32 +65,32 @@ test('failed writes cannot mutate saved tracks, current selection, or deletion s
 });
 test('corrupted local entries recover safely without overwriting raw backups',()=>{
  const storage=new MemoryStorage();storage.setItem(COURSE_STORAGE_KEY,'broken JSON');
- const fallback=new CourseLibrary(storage);assert.equal(fallback.list().length,3);assert.ok(fallback.loadWarning);assert.equal(storage.getItem(COURSE_STORAGE_KEY),'broken JSON');
+ const fallback=new CourseLibrary(storage);assert.equal(fallback.list().length,BUILTIN_COURSES.length);assert.ok(fallback.loadWarning);assert.equal(storage.getItem(COURSE_STORAGE_KEY),'broken JSON');
  const library=new CourseLibrary(new MemoryStorage()),saved=library.save(draft(library,'still valid'));
  const raw={version:1,selectedId:'custom-invalid',courses:[saved,{...saved,id:'custom-invalid',obstacles:[]}]};
  storage.setItem(COURSE_STORAGE_KEY,JSON.stringify(raw));const recovered=new CourseLibrary(storage);
- assert.equal(recovered.list().length,4);assert.equal(recovered.get(saved.id).name,'still valid');assert.ok(recovered.loadWarning);assert.equal(recovered.selectedId,BUILTIN_COURSES[0].id);
+ assert.equal(recovered.list().length,BUILTIN_COURSES.length+1);assert.equal(recovered.get(saved.id).name,'still valid');assert.ok(recovered.loadWarning);assert.equal(recovered.selectedId,BUILTIN_COURSES[0].id);
  assert.equal(storage.getItem(COURSE_STORAGE_KEY),JSON.stringify(raw));
 });
 test('unavailable or denied localStorage keeps built-in export usable with a clear save error',()=>{
  for(const storage of [null,{getItem(){throw new Error('SecurityError');},setItem(){throw new Error('SecurityError');}}]){
-  const library=new CourseLibrary(storage);assert.equal(library.list().length,3);assert.ok(library.loadWarning);assert.equal(library.exportCourse().format,'marblerun-course');assert.throws(()=>library.save(draft(library)),/無法儲存/);
+  const library=new CourseLibrary(storage);assert.equal(library.list().length,BUILTIN_COURSES.length);assert.ok(library.loadWarning);assert.equal(library.exportCourse().format,'marblerun-course');assert.throws(()=>library.save(draft(library)),/無法儲存/);
  }
 });
 test('custom-course limit rejects further imports while existing tracks remain editable',()=>{
  const library=new CourseLibrary(new MemoryStorage());let saved;
  for(let i=0;i<MAX_CUSTOM_COURSES;i++)saved=library.save(draft(library,`Course ${i}`));
  const exported=JSON.stringify(library.exportCourse(saved.id));assert.throws(()=>library.importCourse(exported),/最多/);
- assert.equal(library.save({id:saved.id,...draft(library,'最後修改')}).name,'最後修改');assert.equal(library.list().length,MAX_CUSTOM_COURSES+3);
+ assert.equal(library.save({id:saved.id,...draft(library,'最後修改')}).name,'最後修改');assert.equal(library.list().length,MAX_CUSTOM_COURSES+BUILTIN_COURSES.length);
 });
 
-test('every selectable built-in course lets all entrants finish using its own configuration',async()=>{
+test('non-elimination built-in courses complete a normal prize quota using their own configuration',async()=>{
  const {RaceSimulation}=await import('../src/simulation.js');
- for(const track of BUILTIN_COURSES){
-  const race=new RaceSimulation(40,40,123,track.obstacles);
+ for(const track of BUILTIN_COURSES.filter(track=>!track.obstacles.some(o=>['not-found','node-hole'].includes(o.type)))){
+  const race=new RaceSimulation(40,5,123,track.obstacles);
   while(!race.done&&race.t<240)race.step();
   assert.ok(race.done,`${track.name}: stalled at ${race.t}`);
-  assert.equal(race.winners.length,40);
+  assert.equal(race.winners.length,5);
  }
 });
 

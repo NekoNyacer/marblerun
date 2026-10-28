@@ -15,7 +15,7 @@ test('course supports reordering, disabling and per-instance overrides without m
  assert.equal(getObstacleDefinition('scope-change').defaults.speed,.5);
  const entry=course.find(o=>o.id==='prompt'),index=course.indexOf(entry);
  assert.deepEqual(obstacleShapes(entry,index,2),obstacleShapes(entry,999,2),'explicit phase and id are independent of array order');
- assert.equal(new Set(Object.keys(OBSTACLE_COMPONENTS)).size,12);
+ for(const type of ['code-review','not-found','teapot','node-hole','java-hole','dotnet-hole'])assert.ok(OBSTACLE_COMPONENTS[type]);
 });
 test('invalid edits fail before a race starts',()=>{
  for(const mutate of [

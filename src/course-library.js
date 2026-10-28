@@ -1,4 +1,4 @@
-import {COURSE_CONFIG} from './course-config.js';
+import {slottedCourse} from './course-slots.js';
 import {normalizeCourseEntries} from './course.js';
 
 export const COURSE_STORAGE_KEY = 'banyan-course-library';
@@ -25,12 +25,16 @@ function deepFreeze(value) {
  for (const child of Object.values(value)) if (child && typeof child === 'object') deepFreeze(child);
  return Object.freeze(value);
 }
-const newer = new Set(['scope-change','sprint','ux-flow','handoff','code-review']);
-const quickIds = new Set(['debug-1','requirements','merge-1','review','deadline','finish']);
+const builtIn=(id,name,types)=>({id,name,obstacles:normalizeCourseEntries(slottedCourse(types)),updatedAt:null,builtin:true});
 export const BUILTIN_COURSES = deepFreeze([
- {id:'builtin-festival',name:'大樹 AI 全機關賽道',obstacles:normalizeCourseEntries(COURSE_CONFIG),updatedAt:null,builtin:true},
- {id:'builtin-classic',name:'經典 IT 賽道',obstacles:normalizeCourseEntries(COURSE_CONFIG.filter(o => !newer.has(o.type))),updatedAt:null,builtin:true},
- {id:'builtin-quick',name:'輕量暖身賽道',obstacles:normalizeCourseEntries(COURSE_CONFIG.filter(o => quickIds.has(o.id))),updatedAt:null,builtin:true}
+ builtIn('builtin-festival','未來城市・全機關嘉年華',['pegs','scope-change','not-found','teapot','code-review','node-hole','java-hole','dotnet-hole','ux-flow','handoff','rate','sprint']),
+ builtIn('builtin-classic','經典 IT 賽道',['pegs','error','gate','rotor','pegs','rate','gate','pendulum','error','rotor','rate','sprint']),
+ builtIn('builtin-quick','輕量暖身賽道',['pegs',null,'scope-change',null,'rotor',null,'teapot',null,'code-review',null,null,'sprint']),
+ builtIn('builtin-http','HTTP 狀態碼大亂鬥',['pegs','gate','error','rate','not-found','teapot','rotor','gate','teapot','code-review','rate','sprint']),
+ builtIn('builtin-vulnerabilities','全員加班・漏洞修復夜',['node-hole','pegs','java-hole','teapot','dotnet-hole','code-review','node-hole','rate','java-hole','rotor','dotnet-hole','sprint']),
+ builtIn('builtin-pinball','Code Review 太空彈珠台',['pegs','rotor','code-review','teapot','pendulum','code-review','rotor','code-review','teapot','handoff','code-review','sprint']),
+ builtIn('builtin-design','需求又改了・設計衝刺',['scope-change','ux-flow','handoff','gate','teapot','scope-change','code-review','ux-flow','rate','handoff','sprint','rotor']),
+ builtIn('builtin-comeback','落後才有機會・逆轉大道',['node-hole','java-hole','code-review','dotnet-hole','rate','teapot','node-hole','java-hole','code-review','dotnet-hole','not-found','sprint'])
 ]);
 const builtinIds = new Set(BUILTIN_COURSES.map(course => course.id));
 const emptyState = () => ({version:1,selectedId:BUILTIN_COURSES[0].id,courses:[]});
