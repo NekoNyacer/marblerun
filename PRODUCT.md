@@ -29,3 +29,12 @@ The user approved the latest concept and explicitly requested implementation, wi
 
 ## Collision and track repair v2
 User requested collision/visual alignment, higher obstacle contrast, removal of floor/depth intersections, and added pegs. Shared world-space box/cylinder/sphere descriptors now drive rendering and physics; in-lane divider and support contacts are physical; perimeter frames stand outside guard rails. Five peg fields add 100 collidable pegs with rail clearance. Road-conforming geometry and biased decals address clipping/depth artifacts. Snapshot interpolation uses one timeline for machinery and marbles. Existing v1 replay source is retained.
+
+## Modular course v3
+User authorized implementation of all five previewed mechanisms and independent components for existing mechanisms. Twelve registered component modules now own defaults, collision, decoration, animation and optional event notices. `src/course-config.js` owns placements and per-instance parameters. New scope-change and UX Flow guides connect to both rails and redirect edge traffic inward. Handoff uses an in-plane oscillating balance arm within the existing constrained model. New records include resolved course snapshots; v1/v2 replay engines remain frozen.
+
+## Browser course library
+The user requested track selection, browser editing, localStorage saves and portable JSON import/export, with GitHub Pages static deployment and no backend. Three immutable built-in tracks plus custom copies are selected through a dedicated course manager. Active course data drives both RaceScene and the simulation Worker; racing/countdown/paused states lock changes. Track files carry a versioned schema and resolved component parameters. Saved race records retain the selected course name and exact active configuration. Relative Vite assets and a Pages workflow support repository subpath hosting.
+
+## Future city visual direction
+The user supplied a daylight future-city reference and requested glowing routes and hologram-style icons without a performance regression. Preserve static GitHub Pages hosting, course libraries, current competition rules and obstacle colliders. New visuals use batched skyline/greenery, an emissive road pattern and one hologram atlas; performance comparison uses the same 1280×800, DPR1, 1,500-person starting scene. Final event-device GPU performance remains to be measured on that device.

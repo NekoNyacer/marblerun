@@ -15,7 +15,7 @@ test('gate divider blocks from the side along its entire five-metre length',()=>
  const divider=fixture('gate').shapes.find(s=>s.role==='divider');for(const ds of [-2,0,2]){const race=resolveAt(divider,divider.wx-.4,divider.s+ds,8,0);assert.ok(race.worldX(0)<divider.wx-divider.w/2-RADIUS+1e-4);assert.ok(race.vx[0]<0);}
 });
 test('rotor tip beyond the old seven-metre cutoff collides on a curved track',()=>{
- const f=fixture('rotor'),t=(Math.PI/2-f.k*.9+Math.PI*4)/.8,blade=obstacleShapes(f.o,f.k,t).find(s=>s.role==='rotor');assert.ok(Math.abs(Math.cos(blade.angle))<1e-10);
+ const f=fixture('rotor'),t=(Math.PI/2-f.o.phase*.9+Math.PI*4)/.8,blade=obstacleShapes(f.o,f.k,t).find(s=>s.role==='rotor');assert.ok(Math.abs(Math.cos(blade.angle))<1e-10);
  const race=resolveAt(blade,blade.wx+.4,blade.s+7.2,-9,0);assert.ok(race.worldX(0)>=blade.wx+blade.d/2+RADIUS-1e-4);assert.equal(contactFor(blade,race.worldX(0),race.s[0]),null);
 });
 test('raised barriers allow passage; low barriers block; alternating gates always offer a route',()=>{

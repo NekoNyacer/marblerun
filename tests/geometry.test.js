@@ -22,3 +22,7 @@ test('the rendered boxes and pegs exactly follow collider footprints and sloping
 test('previously exported v1 race seeds still replay with their original engine',async()=>{
  const {RaceSimulation}=await import('../src/legacy/simulation-v1.js');const race=new RaceSimulation(1500,5,20261026);while(!race.done&&race.t<120)race.step();assert.ok(race.done);assert.deepEqual(race.winners.map(w=>w.i),[274,125,554,1033,23]);
 });
+test('previously exported v2 race seeds still replay with the frozen original engine',async()=>{
+ const {RaceSimulation}=await import('../src/legacy/simulation-v2.js');const race=new RaceSimulation(1500,5,20261026);while(!race.done&&race.t<240)race.step();assert.ok(race.done);assert.deepEqual(race.winners.map(w=>w.i),[856,1213,433,1398,647]);
+ assert.ok(Math.abs(race.winners[0].time-61.7931319881796)<1e-7);
+});

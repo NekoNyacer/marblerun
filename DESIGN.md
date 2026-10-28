@@ -1,6 +1,6 @@
 ---
 name: 大樹 AI 競速場
-description: 國泰綠、銀白與透明護欄構成的 IT 主題智慧競技場。
+description: 明亮的綠色未來城市，結合銀白天際線、空中花園、光流賽道與全像圖標。
 colors:
   primary: "#00894f"
   primary-deep: "#0a503a"
@@ -41,9 +41,9 @@ components:
 ---
 ## Overview
 
-**Creative North Star: "IT 同仁的智慧競技場"**
+**Creative North Star: "在綠色未來城市中競速"**
 
-The user-approved visual authority is the latest generated concept: green-and-white race arena, digital banyan tree, upper broadcast ticker, Codex machinery and alternating Credits gates. Actual WebGL geometry replaces the illustration. Materials and background detail are simplified for live rendering.
+The latest user reference is a bright solarpunk city: blue sky, silver/ivory towers, lush terraces, luminous paths and floating projection icons. The race remains the focal plane; the surrounding city adds depth and variety. Existing green/white operation UI, upper ticker and legible machinery retain their function and identity.
 
 ## Colors
 
@@ -65,7 +65,7 @@ Gameplay solids use deep green silhouettes and amber hazard stripes against a mu
 
 ## Shapes
 
-Controls have restrained rounding; larger dialogs and the preparation overlay use a softer corner. Course mechanics use coherent cylindrical pivots, rectangular terminal screens, and continuous guard rails. The digital banyan remains the scene landmark.
+Controls have restrained rounding; larger dialogs and the preparation overlay use a softer corner. Course mechanics use coherent cylindrical pivots, rectangular terminal screens, and continuous guard rails. The city uses varied stepped and tapered towers, leafy rooftop gardens and circular projection stations. Clear off-track silhouettes frame the racers.
 
 ## Components
 
@@ -80,3 +80,9 @@ The ticker has a fixed green label and a moving single-line event message, respe
 - Don't replace the game with a static concept image.
 - Don't use AI themed scenery to imply AI chooses winners.
 - Don't claim final event-machine performance from a development-device measurement.
+
+## Future city rendering budget
+
+The road is one surface with UV-driven cyan light lanes and flowing highlights; it adds no bloom or full-screen compositing pass. Rails, glass panes, support columns and finish markings use shared/merged batches. The ten-batch city uses window material patterns instead of window meshes and vertex-lit diffuse materials for skyline/foliage. Holograms use one static 1024×512 icon atlas and three instanced draws: billboards, projection cones and base rings. There are no additional dynamic lights, shadows or particle simulations.
+
+Pictograms depict decorative cloud, leaf, shield, card and code services, not live race state. They sit outside the racing surface and below the upper ticker. Decorative motion updates shared uniforms; reduced-motion preference freezes it. Low quality retains road lights and icons while omitting distant cloud/edge accents and projection cones/rings. Marble tessellation follows quality without changing ball radius or physics.

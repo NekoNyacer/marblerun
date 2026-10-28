@@ -1,13 +1,15 @@
-import {WIDTH,RADIUS,FINISH,STEP,rng,shuffled,center,centerSlope} from './world.js';
+import {createCourse} from './course.js';
+import {WIDTH,RADIUS,FINISH,STEP,rng,shuffled,center,centerSlope,OBSTACLES} from './world.js';
 import {courseShapes,contactFor,surfaceVelocity} from './obstacles.js';
 const D=RADIUS*2,CELL=D*1.2;
 export class RaceSimulation{
- constructor(count,quota,seed){
+ constructor(count,quota,seed,course=OBSTACLES){
+  this.course=createCourse(course);
   this.count=count;this.quota=Math.min(count,quota);this.seed=seed>>>0;this.t=0;this.steps=0;this.done=false;this.winners=[];this.events=[];
   this.x=new Float64Array(count);this.s=new Float64Array(count);this.vx=new Float64Array(count);this.vs=new Float64Array(count);this.finish=new Float64Array(count).fill(-1);this.lastHit=new Float64Array(count).fill(-100);this.previousX=new Float64Array(count);this.previousS=new Float64Array(count);
   const order=shuffled(count,seed),random=rng(seed^0x82ae),cols=Math.min(24,count);
   for(let slot=0;slot<count;slot++){const i=order[slot];this.x[i]=(slot%cols-(cols-1)/2)*.79;this.s[i]=-Math.floor(slot/cols)*.86;this.vx[i]=(random()-.5)*.06;}
-  this.order=order;this.cells=new Map();this.groups=courseShapes(0);
+  this.order=order;this.cells=new Map();this.groups=courseShapes(0,this.course);
  }
  emit(event){if(this.events.length<30)this.events.push(event);}
  worldX(i){return this.x[i]+center(this.s[i]);}
@@ -15,7 +17,7 @@ export class RaceSimulation{
  boundary(i){const edge=WIDTH/2-RADIUS;if(this.x[i]<-edge){this.x[i]=-edge;this.vx[i]=Math.abs(this.vx[i])*.7;}if(this.x[i]>edge){this.x[i]=edge;this.vx[i]=-Math.abs(this.vx[i])*.7;}}
  resolveObstacles(i,groups=this.groups){
   let wx=this.worldX(i),s=this.s[i];const previous={wx:this.previousX[i],s:this.previousS[i]};
-  for(const group of groups){if(Math.abs(s-group.o.s)>13)continue;
+  for(const group of groups){if(Math.abs(s-group.o.s)>(group.reach??13))continue;
    for(const shape of group.shapes){
     const hit=contactFor(shape,wx,s,RADIUS,previous);if(!hit)continue;
     let worldVX=this.vx[i]+centerSlope(s)*this.vs[i];const velocity=surfaceVelocity(shape,wx,s),relative=(worldVX-velocity.vx)*hit.nx+(this.vs[i]-velocity.vs)*hit.ns;
@@ -28,7 +30,7 @@ export class RaceSimulation{
   this.setWorld(i,wx,s);this.boundary(i);
  }
  step(){
-  if(this.done)return;const dt=STEP;this.t=++this.steps*dt;this.groups=courseShapes(this.t);const crosses=[];
+  if(this.done)return;const dt=STEP;this.t=++this.steps*dt;this.groups=courseShapes(this.t,this.course);const crosses=[];
   for(let i=0;i<this.count;i++){
    if(this.finish[i]>=0)continue;this.previousX[i]=this.worldX(i);this.previousS[i]=this.s[i];
    this.vs[i]+=(2.65-this.vs[i]*.24)*dt;
