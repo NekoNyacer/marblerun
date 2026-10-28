@@ -27,14 +27,14 @@ function deepFreeze(value) {
 }
 const builtIn=(id,name,types)=>({id,name,obstacles:normalizeCourseEntries(slottedCourse(types)),updatedAt:null,builtin:true});
 export const BUILTIN_COURSES = deepFreeze([
- builtIn('builtin-festival','未來城市・全機關嘉年華',['pegs','scope-change','not-found','teapot','code-review','node-hole','java-hole','dotnet-hole','ux-flow','handoff','rate','sprint']),
+ builtIn('builtin-festival','未來城市・全機關嘉年華',['pegs','scope-change','ux-flow','teapot','code-review','overtime-stairs','rotor','ux-flow','gate','handoff','rate','sprint']),
  builtIn('builtin-classic','經典 IT 賽道',['pegs','error','gate','rotor','pegs','rate','gate','pendulum','error','rotor','rate','sprint']),
  builtIn('builtin-quick','輕量暖身賽道',['pegs',null,'scope-change',null,'rotor',null,'teapot',null,'code-review',null,null,'sprint']),
- builtIn('builtin-http','HTTP 狀態碼大亂鬥',['pegs','gate','error','rate','not-found','teapot','rotor','gate','teapot','code-review','rate','sprint']),
- builtIn('builtin-vulnerabilities','全員加班・漏洞修復夜',['node-hole','pegs','java-hole','teapot','dotnet-hole','code-review','node-hole','rate','java-hole','rotor','dotnet-hole','sprint']),
+ builtIn('builtin-http','HTTP 狀態碼大亂鬥',['pegs','gate','error','rate','teapot','rotor','error','gate','teapot','code-review','rate','sprint']),
+ builtIn('builtin-vulnerabilities','電梯故障・加班沙漏',['pegs','gate','teapot','scope-change','overtime-stairs','ux-flow','rate','sprint','overtime-stairs','rotor','handoff','sprint']),
  builtIn('builtin-pinball','Code Review 太空彈珠台',['pegs','rotor','code-review','teapot','pendulum','code-review','rotor','code-review','teapot','handoff','code-review','sprint']),
  builtIn('builtin-design','需求又改了・設計衝刺',['scope-change','ux-flow','handoff','gate','teapot','scope-change','code-review','ux-flow','rate','handoff','sprint','rotor']),
- builtIn('builtin-comeback','落後才有機會・逆轉大道',['node-hole','java-hole','code-review','dotnet-hole','rate','teapot','node-hole','java-hole','code-review','dotnet-hole','not-found','sprint'])
+ builtIn('builtin-comeback','落後才有機會・逆轉大道',['pegs','overtime-stairs','code-review','ux-flow','rate','teapot','pegs','overtime-stairs','code-review','rotor','handoff','sprint'])
 ]);
 const builtinIds = new Set(BUILTIN_COURSES.map(course => course.id));
 const emptyState = () => ({version:1,selectedId:BUILTIN_COURSES[0].id,courses:[]});

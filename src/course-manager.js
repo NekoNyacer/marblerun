@@ -1,13 +1,13 @@
 import './course-manager.css';
 import {OBSTACLE_COMPONENTS,getObstacleDefinition} from './components/obstacles/index.js';
-import {COURSE_SLOTS,MECHANISM_INFO,isSlottedCourse,convertToSlots,slotEntry} from './course-slots.js';
+import {COURSE_SLOTS,MECHANISM_INFO,DEPRECATED_MECHANISMS,isSlottedCourse,convertToSlots,slotEntry} from './course-slots.js';
 import {FINISH} from './track-geometry.js';
 import {icon} from './icons.js';
 
 const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const clone=value=>structuredClone(value);
-const types=Object.values(OBSTACLE_COMPONENTS).filter(def=>def.type!=='finish');
-const groups=[['all','全部'],['impact','碰撞'],['timing','時機'],['http','HTTP'],['bug','漏洞']];
+const types=Object.values(OBSTACLE_COMPONENTS).filter(def=>def.type!=='finish'&&!DEPRECATED_MECHANISMS.has(def.type));
+const groups=[['all','全部'],['impact','碰撞'],['timing','時機'],['http','HTTP'],['challenge','挑戰']];
 const infoFor=type=>MECHANISM_INFO[type]??{name:getObstacleDefinition(type).label,group:'impact',description:'在這個固定位置放入機關，改變隊伍通過的順序。'};
 function glyph(type){
  const paths={
@@ -27,6 +27,7 @@ function glyph(type){
   teapot:'<path d="M20 20h23v12a11 11 0 0 1-23 0V20Zm4-5h15m-10-4h6M20 23 8 19l6 14h7m22-11h7c9 0 9 13 0 13h-7M26 5l-2 3m12-3-2 3"/>',
   'node-hole':'<ellipse cx="32" cy="25" rx="22" ry="14" fill="currentColor" fill-opacity=".13"/><ellipse cx="32" cy="25" rx="22" ry="14"/><circle cx="26" cy="27" r="5" fill="currentColor"/><circle cx="39" cy="24" r="5" fill="currentColor"/><path d="M32 3v10m-4-4 4 4 4-4"/>',
   'java-hole':'<path d="M6 13h52v23H6z" fill="currentColor" fill-opacity=".13"/><path d="M6 13h52v23H6zM14 28l5-5 5 5m-5-5v17m14-12 5-5 5 5m-5-5v17M13 6h38"/>',
+  'overtime-stairs':'<path d="M4 39h10V31h10V23h10V15h10V7h11M49 13h10M49 39h10M51 13c0 6 6 6 6 13s-6 7-6 13M59 13c0 6-6 6-6 13s6 7 6 13"/>',
   'dotnet-hole':'<path d="M11 7h42M11 41h42M15 7c0 12 17 10 17 17s-17 6-17 17M49 7c0 12-17 10-17 17s17 6 17 17"/><path d="M21 16c15-8 29 7 7 10m-5-2 5 2-2 5"/>',
  };
  return `<svg class="cm-glyph" viewBox="0 0 64 48" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[type]??paths.rotor}</svg>`;
@@ -42,7 +43,7 @@ export function mountCourseManager({library,onApply,onMessage=()=>{},isLocked=()
    <section class="cm-editor" aria-label="視覺化賽道編輯器">
     <div class="cm-name-row"><div class="field"><label for="cm-name">賽道名稱</label><input id="cm-name" maxlength="60" required autocomplete="off"></div><span id="cm-draft-state" role="status"></span></div>
     <div class="cm-track-summary"><p id="cm-summary"></p><p id="cm-risk"></p></div>
-    <div id="cm-legacy" class="cm-legacy" hidden><div><strong>這條賽道使用自由位置</strong><p>原本的配置可以直接使用、備份。建立固定位置副本後，就能用下方的視覺化方式編輯。</p></div><button type="button" class="btn" data-cm="convert">建立固定位置副本</button></div>
+    <div id="cm-legacy" class="cm-legacy" hidden><div><strong>這條賽道使用自由位置</strong><p>原始配置可保留或匯出；其中已下架機關在比賽時會略過。建立固定位置副本後，就能視覺化編輯。</p></div><button type="button" class="btn" data-cm="convert">建立固定位置副本</button></div>
     <div class="cm-workbench"><div class="cm-route-wrap"><div class="cm-map-heading"><h3>賽道路線</h3><span>起點 → 終點</span></div><div id="cm-route" class="cm-route"></div></div><section id="cm-palette" class="cm-palette" aria-label="選擇機關"></section></div>
    </section>
   </div>
@@ -73,24 +74,24 @@ export function mountCourseManager({library,onApply,onMessage=()=>{},isLocked=()
   source=clone(track);draft={name:track.name,obstacles:clone(track.obstacles)};baseline=snapshot();selectedSlot=0;filter='all';hideConfirmation();clearFeedback();render();
  }
  function mark(){
-  const changed=dirty(),active=draft.obstacles.filter(o=>o.type!=='finish'&&o.enabled!==false),risky=active.filter(o=>['not-found','node-hole'].includes(o.type)).length;
+  const changed=dirty(),active=draft.obstacles.filter(o=>o.type!=='finish'&&o.enabled!==false),legacy=active.filter(o=>DEPRECATED_MECHANISMS.has(o.type)).length;
   $('#cm-draft-state').textContent=changed?'尚未儲存':source.builtin?'內建範本':'已儲存';$('#cm-draft-state').classList.toggle('cm-unsaved',!!changed);$('[data-cm="apply"]').textContent=changed?'儲存並使用':'使用賽道';
   $('#cm-summary').textContent=`${active.length} 個機關${fixed()?` / ${COURSE_SLOTS.length} 個固定位置`:''} · 全長 ${FINISH}`;
-  $('#cm-risk').textContent=risky?`${risky} 站含淘汰或填洞犧牲`:'所有機關都保留通關機會';$('#cm-risk').classList.toggle('cm-has-risk',!!risky);
+  $('#cm-risk').textContent=legacy?`${legacy} 站已下架，比賽時將略過；可點選替換`:'';$('#cm-risk').classList.toggle('cm-has-risk',!!legacy);
  }
  function renderRoute(){
   if(!fixed()){
-   $('#cm-route').className='cm-route cm-route-legacy';$('#cm-route').innerHTML=`<div class="cm-route-end">起跑</div>${draft.obstacles.filter(o=>o.type!=='finish').map(o=>`<div class="cm-legacy-stop${o.enabled===false?' cm-empty':''}">${glyph(o.type)}<span><strong>${escape(o.label||infoFor(o.type).name)}</strong><small>位置 ${escape(o.s)}${o.enabled===false?' · 已停用':''}</small></span></div>`).join('')}<div class="cm-route-end">Deploy 終點</div>`;return;
+   $('#cm-route').className='cm-route cm-route-legacy';$('#cm-route').innerHTML=`<div class="cm-route-end">起跑</div>${draft.obstacles.filter(o=>o.type!=='finish').map(o=>`<div class="cm-legacy-stop${o.enabled===false?' cm-empty':''}">${glyph(o.type)}<span><strong>${escape(o.label||infoFor(o.type).name)}</strong><small>位置 ${escape(o.s)}${o.enabled===false?' · 已停用':DEPRECATED_MECHANISMS.has(o.type)?' · 已下架，比賽略過':''}</small></span></div>`).join('')}<div class="cm-route-end">Deploy 終點</div>`;return;
   }
   $('#cm-route').className='cm-route';$('#cm-route').innerHTML=`<div class="cm-route-end"><span class="cm-start-dot"></span>起跑</div><ol>${COURSE_SLOTS.map((s,index)=>{
    const o=slotObstacle(index),info=o?infoFor(o.type):null;
-   return `<li><button type="button" class="cm-stop${selectedSlot===index?' cm-selected':''}${o?'':' cm-empty'}" data-slot="${index}" aria-pressed="${selectedSlot===index}" aria-label="位置 ${index+1}：${escape(info?.name??'空白直線')}"><span class="cm-stop-number">${String(index+1).padStart(2,'0')}</span>${glyph(o?.type??'empty')}<span class="cm-stop-label">${escape(info?.name??'空白直線')}${info?.danger?`<small>${escape(info.danger)}</small>`:''}</span></button></li>`;
+   return `<li><button type="button" class="cm-stop${selectedSlot===index?' cm-selected':''}${o?'':' cm-empty'}" data-slot="${index}" aria-pressed="${selectedSlot===index}" aria-label="位置 ${index+1}：${escape(info?.name??'空白直線')}"><span class="cm-stop-number">${String(index+1).padStart(2,'0')}</span>${glyph(o?.type??'empty')}<span class="cm-stop-label">${escape(info?.name??'空白直線')}${o&&DEPRECATED_MECHANISMS.has(o.type)?'<small>已下架</small>':info?.danger?`<small>${escape(info.danger)}</small>`:''}</span></button></li>`;
   }).join('')}</ol><div class="cm-route-end cm-finish-dot">${icon('check')}Deploy 終點</div>`;
  }
  function renderPalette(){
-  if(!fixed()){$('#cm-palette').innerHTML=`<div class="cm-legacy-explanation">${glyph('gate')}<h3>保留原配置，隨時可開賽</h3><p>這是先前儲存的自由位置賽道。建立固定位置副本後，可點選每一站來更換機關。</p><p>副本最多保留 12 個機關，並使用各機關的預設設定；原賽道會完整保留。</p></div>`;return;}
-  const selected=slotObstacle(selectedSlot),info=selected?infoFor(selected.type):{name:'空白直線',description:'留下一段衝刺空間，讓剛闖關的隊伍重新集結。'};
-  $('#cm-palette').innerHTML=`<div class="cm-selected-detail"><div class="cm-detail-icon">${glyph(selected?.type??'empty')}</div><div><span>位置 ${String(selectedSlot+1).padStart(2,'0')}</span><h3>${escape(info.name)}</h3></div><p>${escape(info.description)}</p>${info.danger?`<strong class="cm-danger-note">${escape(info.danger==='淘汰'?'進入死路的彈珠會淘汰':'先落坑的彈珠會永久留在坑內')}</strong>`:''}</div><div class="cm-palette-heading"><h4>這一站放什麼？</h4><div class="cm-filter" aria-label="篩選機關">${groups.map(([key,label])=>`<button type="button" data-filter="${key}" aria-pressed="${filter===key}">${label}</button>`).join('')}</div></div><div class="cm-type-list">${filter==='all'?`<button type="button" class="cm-type${!selected?' cm-type-selected':''}" data-type="empty" aria-pressed="${!selected}">${glyph('empty')}<span>空白直線</span>${!selected?icon('check'):''}</button>`:''}${types.filter(def=>filter==='all'||infoFor(def.type).group===filter).map(def=>{
+  if(!fixed()){$('#cm-palette').innerHTML=`<div class="cm-legacy-explanation">${glyph('gate')}<h3>原配置保留，舊機關將略過</h3><p>這是先前儲存的自由位置賽道。已下架機關在比賽時會略過；建立固定位置副本後，可點選每一站更換機關。</p><p>副本最多保留 12 個機關，並使用各機關的預設設定；已下架的舊機關會略過，原賽道完整保留。</p></div>`;return;}
+  const selected=slotObstacle(selectedSlot),retired=selected&&DEPRECATED_MECHANISMS.has(selected.type),info=selected?infoFor(selected.type):{name:'空白直線',description:'留下一段衝刺空間，讓剛闖關的隊伍重新集結。'};
+  $('#cm-palette').innerHTML=`<div class="cm-selected-detail"><div class="cm-detail-icon">${glyph(selected?.type??'empty')}</div><div><span>位置 ${String(selectedSlot+1).padStart(2,'0')}</span><h3>${escape(info.name)}</h3></div><p>${escape(retired?'已下架的舊版機關在比賽時會略過。可選擇下方機關替換；更換前原始存檔與匯出資料仍會保留。':info.description)}</p>${!retired&&info.danger?`<strong class="cm-danger-note">${escape(info.danger==='淘汰'?'進入死路的彈珠會淘汰':'先落坑的彈珠會永久留在坑內')}</strong>`:''}</div><div class="cm-palette-heading"><h4>這一站放什麼？</h4><div class="cm-filter" aria-label="篩選機關">${groups.map(([key,label])=>`<button type="button" data-filter="${key}" aria-pressed="${filter===key}">${label}</button>`).join('')}</div></div><div class="cm-type-list">${filter==='all'?`<button type="button" class="cm-type${!selected?' cm-type-selected':''}" data-type="empty" aria-pressed="${!selected}">${glyph('empty')}<span>空白直線</span>${!selected?icon('check'):''}</button>`:''}${types.filter(def=>filter==='all'||infoFor(def.type).group===filter).map(def=>{
     const info=infoFor(def.type),active=selected?.type===def.type;
     return `<button type="button" class="cm-type${active?' cm-type-selected':''}" data-type="${escape(def.type)}" aria-pressed="${active}">${glyph(def.type)}<span>${escape(info.name)}${info.danger?`<small>${escape(info.danger)}</small>`:''}</span>${active?icon('check'):''}</button>`;
    }).join('')}</div><p class="cm-edit-hint">點選機關立即替換。位置、大小與運作方式已設定好，按「儲存並使用」套用本場賽事。</p>`;
@@ -115,7 +116,7 @@ export function mountCourseManager({library,onApply,onMessage=()=>{},isLocked=()
    }
    if(action==='convert'){
     const conversion=convertToSlots(draft.obstacles);
-    ask(()=>{const saved=library.save({name:`${draft.name}・固定位置版`.slice(0,60),obstacles:conversion.obstacles});load(saved);message('已建立固定位置副本，原賽道完整保留。現在可點選路線更換機關。');},`將建立新副本：保留 ${conversion.retained} 個機關${conversion.removed?`，略過另外 ${conversion.removed} 個`:''}，安排到固定位置並使用機關預設設定。原賽道不會被覆寫。`,'建立副本','保留原配置');return;
+    ask(()=>{const saved=library.save({name:`${draft.name}・固定位置版`.slice(0,60),obstacles:conversion.obstacles});load(saved);message('已建立固定位置副本，原賽道完整保留。現在可點選路線更換機關。');},`將建立新副本：保留 ${conversion.retained} 個機關${conversion.removed?`，略過另外 ${conversion.removed} 個${conversion.deprecated?`（包含 ${conversion.deprecated} 個已下架舊機關）`:''}`:''}${conversion.disabled?`，另略過 ${conversion.disabled} 個停用機關`:''}，安排到固定位置並使用機關預設設定。原賽道不會被覆寫。`,'建立副本','保留原配置');return;
    }
    if(action==='import'){guarded(()=>$('#cm-file').click(),'匯入其他賽道');return;}
    if(action==='copy'){const saved=library.save(clone(draft));load(saved);message('已另存為個人賽道。按「使用賽道」切換本場。');onMessage('已另存新的個人賽道。');return;}

@@ -2,6 +2,9 @@ import {FINISH} from './track-geometry.js';
 import {resolveObstacle} from './components/obstacles/index.js';
 
 export const MAX_COURSE_OBSTACLES=128;
+// Keep retired entries in saved documents and old replay engines, but do not
+// run them in new races. Organizers can replace them in the course editor.
+export const RETIRED_OBSTACLES=new Set(['not-found','node-hole','java-hole','dotnet-hole']);
 const isObject=value=>value!==null&&typeof value==='object'&&!Array.isArray(value);
 const fields=new Set(['id','s','type','label','phase','enabled','x','params']);
 
@@ -33,6 +36,7 @@ export function normalizeCourseEntries(entries) {
   if (o.type==='rate'&&params.closedDuration+2*params.transition>=params.period) throw new Error(`${o.id}：週期需保留完整開放時間。`);
   if (o.type==='ux-flow'&&params.thickness>=5) throw new Error(`${o.id}：卡片厚度必須小於 5。`);
   if ((o.type==='sprint'&&params.lift<=.7)||(o.type==='gate'&&params.lift<=.66)) throw new Error(`${o.id}：升起高度不足以放行彈珠。`);
+  if (o.type==='overtime-stairs'&&(o.x||params.period<1||params.period>8||params.rise<.6||params.rise>1.5||params.amplitude<params.rise*.6||params.amplitude>params.rise*1.2||params.radius<3.5||params.radius>5.5||params.orbit<1||params.orbit>12)) throw new Error(`${o.id}：樓梯與沙漏必須置中，且升降幅度、週期與沙漏尺寸需維持可通行範圍。`);
   if (['scope-change','ux-flow'].includes(o.type)&&(o.x||params.wallX<10.5||params.innerX>=8)) throw new Error(`${o.id}：導流板必須接住護欄，且保留內側出口；x 請保持 0。`);
   return {...o,label:o.label?.trim()||def.label,params:structuredClone(params)};
  }).sort((a,b)=>a.s-b.s);
@@ -41,5 +45,5 @@ export function normalizeCourseEntries(entries) {
  return course;
 }
 export function createCourse(entries) {
- return normalizeCourseEntries(entries).filter(o=>o.enabled!==false);
+ return normalizeCourseEntries(entries).filter(o=>o.enabled!==false&&!RETIRED_OBSTACLES.has(o.type));
 }

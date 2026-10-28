@@ -1,22 +1,21 @@
 import {WIDTH,RADIUS,rng} from './world.js';
+import {OvertimeMotion} from './overtime-motion.js';
 
 // Status is transmitted separately from the four-float position/velocity stream.
 // Temporary captures remain contenders; permanent losses can never win.
-export const BALL_STATUS=Object.freeze({ACTIVE:0,ELIMINATED:1,NODE_FILL:2,JAVA_HELD:3,VORTEX:4});
-export const isContender=status=>status===0||status===3||status===4;
+export const BALL_STATUS=Object.freeze({ACTIVE:0,ELIMINATED:1,NODE_FILL:2,JAVA_HELD:3,VORTEX:4,OVERTIME:5});
+export const isContender=status=>status===0||status===3||status===4||status===5;
 const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
-const mod=(value,period)=>((value%period)+period)%period;
-const hazardTypes=new Set(['not-found','node-hole','java-hole','dotnet-hole','teapot']);
+const hazardTypes=new Set(['not-found','node-hole','java-hole','dotnet-hole','overtime-stairs']);
 
 export class MechanismRuntime {
  constructor(race){
   this.race=race;this.random=rng(race.seed^0x418404);this.eliminated=[];
-  this.hopStart=new Float64Array(race.count).fill(-100);
   this.items=race.course.filter(o=>hazardTypes.has(o.type)).map(o=>{
    const state={o,p:o.params,phase:'idle',filled:0,held:[],seen:new Set(),nextRelease:0,fullAt:null,liftAt:null};
    if(o.type==='node-hole')state.holes=[-1,1].map(side=>({x:(o.x??0)+side*o.params.spacing,s:o.s,owners:[]}));
    if(o.type==='java-hole')state.phase='collecting';
-   if(o.type==='teapot')state.lastSteam=new Int32Array(race.count).fill(-2147483648);
+   if(o.type==='overtime-stairs'){state.random=this.random;state.motion=new OvertimeMotion(race,state);}
    return state;
   });
  }
@@ -29,7 +28,7 @@ export class MechanismRuntime {
  beforeStep(){
   const r=this.race;
   for(let i=0;i<r.count;i++){
-   if(r.status[i]===0){const age=r.t-this.hopStart[i];r.vertical[i]=age>=0&&age<.7?Math.sin(age/.7*Math.PI)*.85:0;}
+   if(r.status[i]===0)r.vertical[i]=0;
   }
   for(const item of this.items){
    const {o,p}=item;
@@ -37,7 +36,7 @@ export class MechanismRuntime {
     for(const hole of item.holes)for(let n=0;n<hole.owners.length;n++){const i=hole.owners[n];r.x[i]=hole.x;r.s[i]=hole.s;r.vertical[i]=-.25;}
    }else if(o.type==='java-hole')this.updateJava(item);
    else if(o.type==='dotnet-hole')this.updateVortex(item);
-   else if(o.type==='teapot')item.phase=mod(r.t+(o.phase??0)*.23,p.period)<p.pulse?'steaming':'idle';
+   else if(o.type==='overtime-stairs')item.motion.update();
   }
  }
  updateJava(item){
@@ -76,6 +75,7 @@ export class MechanismRuntime {
   }
   item.phase=item.held.length?'swirling':'idle';
  }
+ enterStairs(i){for(const item of this.items)if(item.o.type==='overtime-stairs'&&item.motion.tryEnter(i))return true;return false;}
  detect(i){
   const r=this.race;if(r.status[i]!==0||r.finish[i]>=0)return;
   for(const item of this.items){
@@ -96,11 +96,6 @@ export class MechanismRuntime {
    }else if(o.type==='dotnet-hole'){
     if(!item.seen.has(i)&&dx*dx+ds*ds<p.radius*p.radius){
      this.capture(item,i,4);item.seen.add(i);const spin=this.random(),duration=p.hold*(.75+this.random());item.held.push({i,at:r.t,releaseAt:r.t+duration,angle:Math.atan2(ds/.65,dx),spin});item.filled++;item.phase='swirling';r.emit({type:'vortex-enter',i,obstacle:o.label});return;
-    }
-   }else if(o.type==='teapot'){
-    const clock=r.t+(o.phase??0)*.23,cycle=Math.floor(clock/p.period);
-    if(item.phase==='steaming'&&Math.abs(dx)<p.width/2&&Math.abs(ds)<p.depth/2&&item.lastSteam[i]!==cycle){
-     item.lastSteam[i]=cycle;r.vs[i]=-p.strength*.8;r.vx[i]+=Math.sign(dx||Math.sin(i+cycle))*p.strength*.28;this.hopStart[i]=r.t;r.emit({type:'steam',i,obstacle:o.label});
     }
    }
   }

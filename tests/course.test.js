@@ -39,3 +39,17 @@ test('serialized course snapshot preserves component defaults for replay',()=>{
  for(let i=0;i<180;i++){original.step();restored.step();}
  assert.deepEqual(original.x,restored.x);assert.deepEqual(original.s,restored.s);
 });
+
+test('stairway imports reject parameters that prevent alternating steps from passing',()=>{
+ const finish=COURSE_CONFIG.at(-1),make=params=>[{id:'stairs',type:'overtime-stairs',s:100,params},finish];
+ assert.doesNotThrow(()=>createCourse(make({})));
+ assert.throws(()=>createCourse(make({amplitude:.1})),/可通行/);
+ assert.throws(()=>createCourse(make({radius:20})),/可通行/);
+ assert.throws(()=>createCourse([{id:'stairs',type:'overtime-stairs',s:100,x:2},finish]),/置中/);
+});
+test('retired hazards are retained in saved documents but skipped by new races',()=>{
+ const types=['not-found','node-hole','java-hole','dotnet-hole'];
+ const entries=[...types.map((type,i)=>({id:'retired-'+i,type,s:40+i*33,phase:i})),COURSE_CONFIG.at(-1)];
+ assert.deepEqual(createCourse(entries).map(o=>o.type),['finish']);
+ assert.deepEqual(entries.slice(0,4).map(o=>o.type),types);
+});

@@ -59,6 +59,16 @@ test('both rail-hugging straight paths intersect guide solids on straight and cu
  }
 });
 
+test('UX Flow provides several rail-connected turns and forces central racers through two decision points',()=>{
+ const s=316,shapes=obstacleShapes(entry('ux-flow',s),0,0);
+ assert.equal(shapes.filter(shape=>shape.kind==='box'&&shape.role==='ux-card').length,7);
+ for(const name of ['branch-a','branch-b']){
+  const cards=shapes.filter(shape=>shape.id.includes(name));let hit=false;
+  for(let ds=-13;ds<=13&&!hit;ds+=.04)hit=cards.some(shape=>contactFor(shape,center(s+ds),s+ds));
+  assert.ok(hit,`${name} leaves the central straight line completely open`);
+ }
+});
+
 test('edge-launched marbles collide, move inward, and clear both guide mechanisms',()=>{
  const edge=WIDTH/2-RADIUS;
  for(const [type,s] of [['scope-change',52],['ux-flow',316]])for(const side of [-1,1])for(const phase of [0,3,7]){

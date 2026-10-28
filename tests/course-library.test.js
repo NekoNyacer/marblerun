@@ -103,3 +103,11 @@ test('save-and-use commits the track and selection together, or leaves both unch
  assert.throws(()=>library.saveAndSelect(draft(library,'不能留下半成品')),/無法儲存/);
  assert.equal(storage.getItem(COURSE_STORAGE_KEY),before);assert.deepEqual(library.list(),tracks);assert.equal(library.selectedId,selected.id);
 });
+
+test('retired hazards remain in stored and exported data but are skipped during races',async()=>{
+ const library=new CourseLibrary(new MemoryStorage());
+ const source={name:'舊活動賽道',obstacles:[{id:'old-404',s:59,type:'not-found',phase:0},{id:'old-node',s:92,type:'node-hole',phase:1},{id:'finish',s:430,type:'finish',phase:0}]};
+ const stored=library.save(source),exported=library.exportCourse(stored.id),copy=library.importCourse(JSON.stringify(exported));
+ assert.deepEqual(copy.obstacles,stored.obstacles);assert.deepEqual(copy.obstacles.map(o=>o.type),['not-found','node-hole','finish']);
+ const {createCourse}=await import('../src/course.js');assert.deepEqual(createCourse(copy.obstacles).map(o=>o.type),['finish']);
+});

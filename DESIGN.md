@@ -89,8 +89,11 @@ Pictograms depict decorative cloud, leaf, shield, card and code services, not li
 
 ## Visual course composition and hazard states
 
-The course manager shows twelve fixed stations with miniature mechanism diagrams and a focused selection palette. Hosts choose hardware or an empty straight, not geometry values. Existing free-position tracks stay playable until the host explicitly creates a fixed-position copy. Permanent elimination and Node.js fill traps are identified before a race.
+The course manager shows twelve fixed stations with miniature mechanism diagrams and a focused selection palette. Hosts choose hardware or an empty straight, not geometry values. Existing free-position tracks stay playable until the host explicitly creates a fixed-position copy. Retired hazards in an older saved course are identified before a race and skipped without changing the saved file.
 
-Amber side pinball flippers sweep upstream at staggered, irregular times. Dark pits, fill indicators, a rising Java bridge and the .NET hourglass communicate actual Worker state; the 418 teapot uses three reusable steam puffs. Temporary captures remain contenders. Permanent losses leave the ranking and count toward a clearly explained prize shortfall.
+Amber side pinball flippers sweep upstream at staggered, irregular times. The 418 teapot raises physical barriers and UX Flow uses staggered cards. The elevated staircase and hourglass communicate actual Worker height and motion; marbles in that mechanism remain contenders.
 
 Original locally synthesized 140 BPM party music accompanies countdown, racing and a short finish cadence. The combined music/effects button starts muted and requires a user gesture; pause, hidden tabs and reset stop scheduled music.
+
+## Stairway and overtime hourglass
+One fixed station contains a full-width alternating lift staircase, raised walkway and elevated hourglass. The camera and name tags follow each racer's actual height; after spiralling down the funnel, the marble visibly falls to the ground track. Amber and green alternating steps make the motion readable. Existing saved legacy obstacle courses remain available with a clear warning; retired mechanisms are excluded from new choices.

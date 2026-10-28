@@ -51,7 +51,7 @@ export class RaceScene{
   }
   for(const material of materials){material.map?.dispose();material.dispose();}
   this.course=course;this.obstacles=[];course.forEach((o,k)=>this.makeObstacle(o,k));
-  this.frames=[];this.displayData=null;this.targetData=null;this.displayT=0;this.cameraReady=false;this.focusS=5;this.focusX=0;
+  this.frames=[];this.displayData=null;this.targetData=null;this.displayT=0;this.cameraReady=false;this.focusS=5;this.focusX=0;this.focusHeight=0;
  }
  makeObstacle(o,k){const view=new ObstacleView(this,o,k);this.obstacles.push({s:o.s,view,group:view.group});}
  makeEnvironment(){this.city=new FutureCity(this.scene);this.holograms=new HologramNetwork(this.scene);}
@@ -73,18 +73,18 @@ export class RaceScene{
   const alpha=upper.t>lower.t?(this.displayT-lower.t)/(upper.t-lower.t):0;for(let j=0;j<this.displayData.length;j++)this.displayData[j]=lower.data[j]+(upper.data[j]-lower.data[j])*alpha;
   const frameGroups=this.updateObstacles(this.displayT);
   const visualTime=this.reducedMotion?0:clock;this.circuitTrack.update(visualTime);this.city.update(visualTime,this.focusS);this.holograms.update(visualTime,this.focusS);
-  const data=this.displayData,rank=this.ranking||[];let leader=rank.find(i=>!this.winnerIds.has(i));if(leader===undefined)leader=rank[0]||0;
+  const data=this.displayData,rank=this.ranking||[],verticalAt=i=>(lower.vertical?.[i]??0)*(1-alpha)+(upper.vertical?.[i]??0)*alpha;let leader=rank.find(i=>!this.winnerIds.has(i));if(leader===undefined)leader=rank[0]||0;
   const leaderS=Math.max(0,data[leader*4+1]);this.focusS+=(leaderS-this.focusS)*(this.cameraReady?1-Math.exp(-dt*2.5):1);
   const group=rank.filter(i=>!this.winnerIds.has(i)&&data[i*4+1]>leaderS-20).slice(0,8);
   const groupX=group.reduce((total,i)=>total+data[i*4],0)/(group.length||1);this.focusX??=groupX;this.focusX+=(groupX-this.focusX)*(1-Math.exp(-dt*2));
-  const p=position(this.focusS),lp=position(Math.min(FINISH+6,this.focusS+2));
-  if(this.view==='wide'){this.target.set(p[0]+15,p[1]+27,p[2]+27);this.look.set(lp[0],lp[1],lp[2]-8);}else{this.target.set(p[0]+this.focusX*.65+4,p[1]+11,p[2]+18.5);this.look.set(lp[0]+this.focusX*.7,lp[1]+1.1,lp[2]-2.5);}
+  const height=Math.max(0,verticalAt(leader));this.focusHeight??=height;this.focusHeight+=(height-this.focusHeight)*(this.cameraReady?1-Math.exp(-dt*2.5):1);const p=position(this.focusS),lp=position(Math.min(FINISH+6,this.focusS+2));p[1]+=this.focusHeight;lp[1]+=this.focusHeight;
+  if(this.view==='wide'){this.target.set(p[0]+15,p[1]+27,p[2]+27);this.look.set(lp[0],lp[1],lp[2]-8);}else if(this.racerStatus?.[leader]===5){this.target.set(p[0]+this.focusX*.65+12,p[1]+16,p[2]+15);this.look.set(lp[0]+this.focusX*.7,lp[1]+.7,lp[2]-2);}else{this.target.set(p[0]+this.focusX*.65+4,p[1]+11,p[2]+18.5);this.look.set(lp[0]+this.focusX*.7,lp[1]+1.1,lp[2]-2.5);}
   this.camera.position.lerp(this.target,this.cameraReady?1-Math.exp(-dt*3):1);this.camera.lookAt(this.look);this.cameraReady=true;
   this.camera.updateMatrixWorld();this.matrix.multiplyMatrices(this.camera.projectionMatrix,this.camera.matrixWorldInverse);this.frustum.setFromProjectionMatrix(this.matrix);
   let visible=0;const dummy=this.dummy;
   for(let i=0;i<data.length/4;i++){
    if(this.racerStatus?.[i]===1)continue;let x=data[i*4],s=data[i*4+1];if(s<this.focusS-45||s>this.focusS+110)continue;const corrected=(this.racerStatus?.[i]??0)===0?projectVisualBall(center(s)+x,s,frameGroups):{wx:center(s)+x,s};s=corrected.s;x=corrected.wx-center(s);data[i*4]=x;data[i*4+1]=s;
-   const p=position(s,x),vertical=(lower.vertical?.[i]??0)*(1-alpha)+(upper.vertical?.[i]??0)*alpha;this.sphere.center.set(p[0],p[1]+RADIUS+vertical,p[2]);if(!this.frustum.intersectsSphere(this.sphere))continue;
+   const p=position(s,x),vertical=verticalAt(i);this.sphere.center.set(p[0],p[1]+RADIUS+vertical,p[2]);if(!this.frustum.intersectsSphere(this.sphere))continue;
    dummy.position.copy(this.sphere.center);dummy.rotation.set(-s/RADIUS,x/RADIUS,0);dummy.scale.setScalar(1);dummy.updateMatrix();this.balls.setMatrixAt(visible,dummy.matrix);this.color.set(PALETTE[i%PALETTE.length]);this.balls.setColorAt(visible,this.color);
    dummy.position.y=p[1]+.035;dummy.rotation.set(-Math.PI/2,0,0);dummy.scale.setScalar((this.racerStatus?.[i]??0)>1?0:1);dummy.updateMatrix();this.shadows.setMatrixAt(visible,dummy.matrix);visible++;
   }
@@ -92,7 +92,7 @@ export class RaceScene{
   
   const w=this.container.clientWidth,h=this.container.clientHeight,rects=[];
   for(let n=0;n<this.labels.length;n++){
-   const el=this.labels[n],i=rank[n];if(i===undefined){el.hidden=true;continue;}const s=data[i*4+1],p=position(s,data[i*4]);this.v.set(p[0],p[1]+1.25,p[2]).project(this.camera);const xx=(this.v.x*.5+.5)*w,yy=(-this.v.y*.5+.5)*h;const overlap=rects.some(r=>Math.abs(r.x-xx)<115&&Math.abs(r.y-yy)<48);
+   const el=this.labels[n],i=rank[n];if(i===undefined){el.hidden=true;continue;}const s=data[i*4+1],p=position(s,data[i*4]);this.v.set(p[0],p[1]+1.25+verticalAt(i),p[2]).project(this.camera);const xx=(this.v.x*.5+.5)*w,yy=(-this.v.y*.5+.5)*h;const overlap=rects.some(r=>Math.abs(r.x-xx)<115&&Math.abs(r.y-yy)<48);
    const hidden=this.v.z>1||this.v.z<0||xx<60||xx>w-60||yy<80||yy>h-65||overlap;el.hidden=hidden;if(hidden)continue;rects.push({x:xx,y:yy});el.style.left=xx+'px';el.style.top=yy+'px';el.style.setProperty('--racer',PALETTE[i%PALETTE.length]);el.textContent=`${n+1} ${this.participants[i]?.name||''}`;
   }
   this.renderer.render(this.scene,this.camera);this.onStats?.(visible);

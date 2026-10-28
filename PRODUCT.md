@@ -41,3 +41,6 @@ The user supplied a daylight future-city reference and requested glowing routes 
 
 ## Party mechanisms v4
 User requested official logo layout repair, single-row race HUD, automatic pinball flippers, HTTP 404 elimination/418 steam, permanent Node.js fill pits, a full-width Java lift pit and .NET overtime hourglass. Simulation now distinguishes permanent losses from temporary holds, reports prize shortfalls, and preserves frozen v1–v3 replay. Course editing uses twelve fixed stations and visual hardware selection; legacy free-position custom tracks require an explicit conversion copy. Original synthesized party music follows race phases and the combined audio toggle.
+
+## Stairway and overtime hourglass v5
+The user removed the 404, Node.js, Java and standalone .NET obstacle choices. Existing custom courses and historical race records remain readable. The replacement is a single full-width station: alternating vertically moving steps carry marbles to an elevated approach and overtime hourglass, from which they fall to the original road elevation. Tea now has physical rising barriers, and UX Flow has additional alternating maze cards. The new model retains historical replay engines.

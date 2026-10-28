@@ -44,7 +44,7 @@ export class RaceSimulation{
    if(this.finish[i]>=0||this.status[i]!==0)continue;this.previousX[i]=this.worldX(i);this.previousS[i]=this.s[i];
    this.vs[i]+=(2.65-this.vs[i]*.24)*dt;
    this.vx[i]+=(-Math.sin(this.s[i]/52)*this.vs[i]*this.vs[i]*.0026-this.vx[i]*.48)*dt;
-   this.x[i]+=this.vx[i]*dt;this.s[i]+=this.vs[i]*dt;this.boundary(i);this.resolveObstacles(i);this.mechanisms.detect(i);
+   this.x[i]+=this.vx[i]*dt;this.s[i]+=this.vs[i]*dt;this.boundary(i);this.mechanisms.enterStairs(i);if(this.status[i]!==0)continue;this.resolveObstacles(i);this.mechanisms.detect(i);
   }
   // Local-neighbour collisions in the SAME world plane used by obstacle geometry.
   const cells=this.cells;cells.clear();
@@ -64,7 +64,7 @@ export class RaceSimulation{
   }
   // Contacts are solved again AFTER the crowd solver; other balls cannot push a marble through a pillar.
   for(let i=0;i<this.count;i++){
-   if(this.finish[i]>=0||this.status[i]!==0)continue;this.resolveObstacles(i);this.resolveObstacles(i);this.mechanisms.detect(i);if(this.status[i]!==0)continue;
+   if(this.finish[i]>=0||this.status[i]!==0)continue;this.resolveObstacles(i);this.resolveObstacles(i);this.mechanisms.enterStairs(i);if(this.status[i]!==0)continue;this.mechanisms.detect(i);if(this.status[i]!==0)continue;
    this.vx[i]=Math.max(-16,Math.min(16,this.vx[i]));this.vs[i]=Math.max(-12,Math.min(18,this.vs[i]));
    if(this.s[i]>=FINISH){const fraction=this.vs[i]>0?Math.max(0,Math.min(dt,(this.s[i]-FINISH)/this.vs[i])):0;crosses.push({i,time:this.t-fraction});}
   }

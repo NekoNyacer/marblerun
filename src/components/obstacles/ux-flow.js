@@ -13,11 +13,14 @@ export default {
  defaults:{wallX:10.7,innerX:2.6,spacing:5.5,guideDepth:3.6,height:1.25,thickness:.7},
  build(ctx,p){
   const d=p.guideDepth/2;
-  card(ctx,'entry-card',p.wallX,-p.spacing-d,p.innerX,-p.spacing+d,p,'deep');
-  card(ctx,'exit-card',-p.wallX,p.spacing-d,-p.innerX,p.spacing+d,p,'green');
-  // The middle card leaves two generous overtaking gaps. Rounded ends share
-  // their cylinder geometry with collision, rather than being visual padding.
-  card(ctx,'decision-card',-2.6,-1.2,2.6,1.2,p,'amber');
+  // Five staggered cards funnel alternating sides inward. Two smaller decision
+  // cards add central detours; rail-connected ends close the edge shortcuts.
+  for(let row=0;row<5;row++){
+   const side=row%2===0?1:-1,at=(row-2)*p.spacing;
+   card(ctx,`flow-card-${row}`,side*p.wallX,at-d,side*p.innerX,at+d,p,['deep','green','amber','green','deep'][row]);
+  }
+  card(ctx,'branch-a',-2.1,-2.9,.5,-1.1,p,'amber');
+  card(ctx,'branch-b',2.1,2.6,-.5,4.4,p,'amber');
  },
  decorate(view){
   view.sign('UX FLOW',-12.4,3.3,4.9,view.o.label);
