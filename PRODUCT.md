@@ -15,7 +15,7 @@ User explicitly chose a bright amusement park visual style. Traditional Chinese 
 ## Evidence on Hand
 No company identity or real employee list supplied. All initial participant names are clearly labeled demo data.
 ## Open decisions
-Target event computer and projector resolution unknown. First implementation is a custom constrained rolling simulation, not a general-purpose rigid-body engine. Performance must be measured on the actual event device.
+Target event computer and projector resolution unknown. The main track uses custom constrained rolling; the staircase and hourglass use a local 3D sphere contact solver. The application is not a general-purpose rigid-body engine. Performance must be measured on the actual event device.
 
 ## Confirmed visual and race-event requirements (preview stage)
 - Cathay United Bank IT department theme; emerald/white/silver technology amusement arena, digital banyan landmark, ChatGPT conversation gates and Codex terminal-themed machinery. Preview approval still precedes implementation.
@@ -44,3 +44,8 @@ User requested official logo layout repair, single-row race HUD, automatic pinba
 
 ## Stairway and overtime hourglass v5
 The user removed the 404, Node.js, Java and standalone .NET obstacle choices. Existing custom courses and historical race records remain readable. The replacement is a single full-width station: alternating vertically moving steps carry marbles to an elevated approach and overtime hourglass, from which they fall to the original road elevation. Tea now has physical rising barriers, and UX Flow has additional alternating maze cards. The new model retains historical replay engines.
+
+## Physical staircase and hourglass v6
+The user reported that the staircase/elevator and hourglass looked animated rather than physical and requested reimplementation. New races use `banyan-constrained-rolling-v6`. This station now integrates sphere position and velocity in three dimensions, with four substeps per fixed 90 Hz race step and gravity of 9.81 m/s². Moving stair contact transfers the surface velocity; solid risers, sloped tops, the narrowing deck, guide walls, stationary upper/lower cones, friction and 3D spatial-hash sphere collisions determine the path. Marbles leave the funnel in free flight and retain momentum through landing. Stage labels are telemetry and do not prescribe positions, orbit durations, queues or release times.
+
+Rendering and contacts share `src/overtime-geometry.js`. The stair transmission ratio is 2.2 and motor acceleration is limited to 4.4 m/s², so the effective period may exceed the requested `period`. The legacy `orbit` parameter controls funnel friction rather than a timed spiral. All racers retain the same physical parameters. The main road keeps constrained rolling; this change does not introduce a full-track rigid-body engine. The complete v5 engine is frozen under `src/legacy/v5/` for historical replays. All 80 regression tests pass, including 1,500 entrants clearing the station and finishing (seed 82, 209.74 simulated seconds), exact 100-entrant reproduction, four legal parameter boundaries, shared geometry and legacy replay. A browser demonstration on the two-station overtime course also completed without script errors. GPU throughput and projection quality still require validation on the event computer.

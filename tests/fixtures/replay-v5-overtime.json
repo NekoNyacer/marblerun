@@ -1,0 +1,79 @@
+{
+  "model": "banyan-constrained-rolling-v5",
+  "count": 8,
+  "quota": 3,
+  "seed": 20261029,
+  "course": [
+    {
+      "id": "stairs",
+      "type": "overtime-stairs",
+      "s": 50,
+      "phase": 0,
+      "label": "電梯故障・加班沙漏",
+      "params": {
+        "period": 2.4,
+        "rise": 1.05,
+        "amplitude": 0.65,
+        "orbit": 5,
+        "radius": 5
+      }
+    },
+    {
+      "id": "finish",
+      "type": "finish",
+      "s": 430,
+      "phase": 0,
+      "label": "DEPLOY SUCCESS",
+      "params": {}
+    }
+  ],
+  "elapsed": 57.988888888888894,
+  "participants": [
+    {
+      "id": "legacy-0",
+      "name": "Entrant 0"
+    },
+    {
+      "id": "legacy-1",
+      "name": "Entrant 1"
+    },
+    {
+      "id": "legacy-2",
+      "name": "Entrant 2"
+    },
+    {
+      "id": "legacy-3",
+      "name": "Entrant 3"
+    },
+    {
+      "id": "legacy-4",
+      "name": "Entrant 4"
+    },
+    {
+      "id": "legacy-5",
+      "name": "Entrant 5"
+    },
+    {
+      "id": "legacy-6",
+      "name": "Entrant 6"
+    },
+    {
+      "id": "legacy-7",
+      "name": "Entrant 7"
+    }
+  ],
+  "winners": [
+    {
+      "id": "legacy-0",
+      "time": 55.99568854423463
+    },
+    {
+      "id": "legacy-1",
+      "time": 56.811575699520446
+    },
+    {
+      "id": "legacy-5",
+      "time": 57.98292820385588
+    }
+  ]
+}
