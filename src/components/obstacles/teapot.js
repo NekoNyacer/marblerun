@@ -1,3 +1,4 @@
+import {simSin} from '../../deterministic-math.js';
 import {rectangle,statusSign,outerPosts} from './hazard-visuals.js';
 import {smooth} from './shared.js';
 
@@ -14,7 +15,7 @@ export default {
  build(ctx,p,t,phase){
   outerPosts(ctx,2);const state=teapotState(t,phase,p),spacing=p.width/5;
   for(let lane=0;lane<5;lane++){
-   const rise=state.lifts[lane%2],y=-1.05+rise*1.13;
+   const rise=state.lifts[lane%2],y=-1.12+rise*1.20;
    ctx.trackBox(`cup-${lane}`,(lane-2)*spacing,0,y,1.05,spacing-.2,.9,{role:'teapot-obstacle',materialKey:lane%2?'green':'amber'});
   }
  },
@@ -24,9 +25,9 @@ export default {
   const handle=host.mesh(new T.TorusGeometry(.95,.16,6,16,Math.PI*1.7),host.materials.deep,decor);handle.position.set(-14.15,2.2,0);handle.rotation.z=.15;
   host.beam([-11.8,2.1,0],[-10.3,3.1,0],.25,mat,decor);host.beam([-10.3,3.1,0],[-9.9,3.8,0],.22,mat,decor);
   view.steam=[];const steamMat=new T.MeshBasicMaterial({color:0xd7fff7,transparent:true,opacity:.1,depthWrite:false});for(let i=0;i<3;i++){const puff=host.mesh(new T.IcosahedronGeometry(.46,0),steamMat,decor);puff.position.set(-9.85+i*.45,4+i*.62,0);view.steam.push(puff);}
-  const glow=new T.MeshBasicMaterial({color:0x7af4db,transparent:true,opacity:.16,depthWrite:false});view.steamLane=rectangle(view,0,0,p.width,p.depth,glow,.055);
+  const glow=new T.MeshBasicMaterial({color:0x7af4db,transparent:true,opacity:.16,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-3,polygonOffsetUnits:-3});view.steamLane=rectangle(view,0,0,p.width,p.depth,glow,.095);
   statusSign(view,"418 I'M A TEAPOT",'我是茶壺 · 注意升降障礙',-13.5,6.6,7.8);
  },
- update(view,t,shapes,p){const rising=teapotState(t,view.phase??0,p).height>.1;view.steam?.forEach((puff,n)=>{puff.visible=rising;puff.position.y=4+n*.62+Math.sin(t*7+n)*.17;});if(view.steamLane)view.steamLane.material.opacity=rising?.23:.045;},
+ update(view,t,shapes,p){const rising=teapotState(t,view.phase??0,p).height>.1;view.steam?.forEach((puff,n)=>{puff.visible=rising;puff.position.y=4+n*.62+simSin(t*7+n)*.17;});if(view.steamLane)view.steamLane.material.opacity=rising?.23:.045;},
  notice(t,phase,p){const state=teapotState(t,phase,p);return state.height>.1?{key:`rise-${state.group}`,text:"418 I'm a teapot！我是茶壺：障礙柱從地面升起，留意交替開放的通道！"}:null;}
 };

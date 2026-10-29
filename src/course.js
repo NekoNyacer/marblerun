@@ -26,6 +26,8 @@ export function normalizeCourseEntries(entries) {
   if (o.label!==undefined&&(typeof o.label!=='string'||o.label.length>80)) throw new Error(`${o.id}：機關名稱最多 80 字。`);
   if (o.params!==undefined&&!isObject(o.params)) throw new Error(`${o.id}：params 必須是參數物件。`);
   const {def,params}=resolveObstacle(o);
+  // Tracks saved by v5/v6 carry the previous resolved default explicitly.
+  if(o.type==='overtime-stairs'&&params.radius===5)params.radius=7;
   for (const [key,value] of Object.entries(params)) {
    if (!Object.hasOwn(def.defaults,key)) throw new Error(`${o.id}：未知參數 ${key}`);
    if (typeof def.defaults[key]==='number'&&(!Number.isFinite(value)||value<=0||value>1000)) throw new Error(`${o.id}：${key} 必須大於 0 且不超過 1000。`);
@@ -36,7 +38,7 @@ export function normalizeCourseEntries(entries) {
   if (o.type==='rate'&&params.closedDuration+2*params.transition>=params.period) throw new Error(`${o.id}：週期需保留完整開放時間。`);
   if (o.type==='ux-flow'&&params.thickness>=5) throw new Error(`${o.id}：卡片厚度必須小於 5。`);
   if ((o.type==='sprint'&&params.lift<=.7)||(o.type==='gate'&&params.lift<=.66)) throw new Error(`${o.id}：升起高度不足以放行彈珠。`);
-  if (o.type==='overtime-stairs'&&(o.x||params.period<1||params.period>8||params.rise<.6||params.rise>1.5||params.amplitude<params.rise*.6||params.amplitude>params.rise*1.2||params.radius<3.5||params.radius>5.5||params.orbit<1||params.orbit>12)) throw new Error(`${o.id}：樓梯與沙漏必須置中，且升降幅度、週期與沙漏尺寸需維持可通行範圍。`);
+  if (o.type==='overtime-stairs'&&(o.x||params.period<1||params.period>8||params.rise<.6||params.rise>1.5||params.amplitude<params.rise*.6||params.amplitude>params.rise*1.2||params.radius<3.5||params.radius>7.2||params.orbit<1||params.orbit>12)) throw new Error(`${o.id}：樓梯與沙漏必須置中，且升降幅度、週期與沙漏尺寸需維持可通行範圍。`);
   if (['scope-change','ux-flow'].includes(o.type)&&(o.x||params.wallX<10.5||params.innerX>=8)) throw new Error(`${o.id}：導流板必須接住護欄，且保留內側出口；x 請保持 0。`);
   return {...o,label:o.label?.trim()||def.label,params:structuredClone(params)};
  }).sort((a,b)=>a.s-b.s);

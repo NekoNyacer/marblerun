@@ -1,5 +1,6 @@
+import {simSin,simCos} from '../../deterministic-math.js';
 import {smooth} from './shared.js';
-const noise=n=>{const v=Math.sin(n*127.1+311.7)*43758.5453;return v-Math.floor(v);};
+const noise=n=>{const v=simSin(n*127.1+311.7)*43758.5453;return v-Math.floor(v);};
 export function reviewStroke(t,side,phase=0,speed=1){
  const clock=t*speed+phase*.19,slot=Math.floor(clock/4.8);
  for(let k=slot-1;k<=slot;k++){
@@ -16,9 +17,9 @@ export default {
  build(ctx,p,t,phase){for(const side of [-1,1]){
   const pivot=side*9.65,length=Math.max(8.6,p.armLength),stroke=reviewStroke(t,side,phase,p.speed);
   const angle=side*(-Math.min(.38,p.opening)+Math.max(.8,p.swing)*stroke.value),omega=side*Math.max(.8,p.swing)*stroke.velocity;
-  const offset=-side*length/2,x=pivot+offset*Math.cos(angle),ds=offset*Math.sin(angle);
+  const offset=-side*length/2,x=pivot+offset*simCos(angle),ds=offset*simSin(angle);
   ctx.add(`pivot-${side}`,'circle',pivot,0,0,1.65,{r:.43,role:'post',materialKey:'metal'});
-  ctx.box(`flipper-${side}`,x,ds,.04,p.height,length,p.depth,{angle,omega,vx:-offset*Math.sin(angle)*omega,vs:offset*Math.cos(angle)*omega,role:'code-review',materialKey:side<0?'amber':'green'});
+  ctx.box(`flipper-${side}`,x,ds,.04,p.height,length,p.depth,{angle,omega,vx:-offset*simSin(angle)*omega,vs:offset*simCos(angle)*omega,role:'code-review',materialKey:side<0?'amber':'green'});
  }},
  decorate(view){view.sign('CODE REVIEW',-12.9,3.6,6,'雙側回擊 · 瞄準中央');view.host.cylinder(.13,2.7,view.host.materials.metal,-12.9,1.35,0,view.decor);},
  notice(t,phase,p){return [-1,1].some(side=>reviewStroke(t,side,phase,p.speed).velocity>1)?{key:'flipping',text:'Code Review 推板回擊！走正中央，或抓準回板空檔。'}:null;}

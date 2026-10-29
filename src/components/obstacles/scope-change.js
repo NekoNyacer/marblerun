@@ -1,3 +1,4 @@
+import {simSin,simCos,simAtan2,simHypot} from '../../deterministic-math.js';
 import {center} from '../../track-geometry.js';
 
 // A wall-connected diagonal has an inward-facing upstream surface: edge traffic
@@ -6,7 +7,7 @@ function guide(ctx,id,side,ds,p){
  const a={x:center(ctx.o.s+ds-p.guideDepth/2)+side*p.wallX,s:ds-p.guideDepth/2};
  const b={x:center(ctx.o.s+ds+p.guideDepth/2)+side*p.innerX,s:ds+p.guideDepth/2};
  const dx=b.x-a.x,dz=b.s-a.s;
- ctx.box(id,(a.x+b.x)/2-ctx.origin,ds,.04,p.height,Math.hypot(dx,dz),p.thickness,{angle:Math.atan2(dz,dx),role:'guide',materialKey:'deep'});
+ ctx.box(id,(a.x+b.x)/2-ctx.origin,ds,.04,p.height,simHypot(dx,dz),p.thickness,{angle:simAtan2(dz,dx),role:'guide',materialKey:'deep'});
 }
 
 export default {
@@ -17,7 +18,7 @@ export default {
   guide(ctx,'guide-left',-1,p.guideSpacing,p);
   const a=t*p.speed+phase*.7;
   ctx.add('pivot','circle',0,0,0,1.9,{r:.4,role:'post',materialKey:'metal'});
-  ctx.box('requirement',0,0,.05,p.height,p.bladeWidth,p.thickness,{angle:p.swing*Math.sin(a),omega:p.swing*p.speed*Math.cos(a),role:'scope-change',materialKey:'amber'});
+  ctx.box('requirement',0,0,.05,p.height,p.bladeWidth,p.thickness,{angle:p.swing*simSin(a),omega:p.swing*p.speed*simCos(a),role:'scope-change',materialKey:'amber'});
  },
  decorate(view){
   view.sign('SCOPE CHANGE',-12.8,3.3,5.3,view.o.label);

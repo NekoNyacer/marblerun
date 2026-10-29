@@ -12,7 +12,7 @@ const geometry=r=>{const item=r.mechanisms.items[0];return overtimeGeometry(item
 // tested independently of the time it takes to reach the station in a race.
 function addBall(r,i,state){
  const item=r.mechanisms.items[0],g=geometry(r);
- const h={i,x:g.bowlX,z:BOWL_CENTER,y:elevation(item.o.s+BOWL_CENTER)+RADIUS+.5,vx:0,vz:0,vy:0,stage:'drop',...state};
+ const h={i,x:g.bowlX,z:BOWL_CENTER,y:elevation(item.o.s+BOWL_CENTER)+RADIUS+.5,vx:0,vz:0,vy:0,stage:'drop',passedThroat:true,...state};
  item.held.push(h);item.seen.add(i);item.filled++;r.status[i]=5;
  r.s[i]=item.o.s+h.z;r.x[i]=g.originX+h.x-center(r.s[i]);r.vertical[i]=h.y-elevation(r.s[i])-RADIUS;
  return h;
@@ -113,7 +113,7 @@ test('landing returns the sphere to the road with its horizontal momentum',()=>{
 
 test('a full field passes the physical stairs and funnel reproducibly',()=>{
  const a=createRace(100,103),b=createRace(100,103);let elevated=false,insideBowl=false;
- while(!a.done&&a.t<240){
+ while(!a.done&&a.t<480){
   a.step();b.step();
   const item=a.mechanisms.items[0];
   for(const h of item.held){
@@ -123,7 +123,21 @@ test('a full field passes the physical stairs and funnel reproducibly',()=>{
   }
  }
  assert.ok(a.done,`${a.winners.length}/100 finished at ${a.t.toFixed(1)}s`);
- assert.equal(a.winners.length,100);assert.equal(a.mechanisms.items[0].held.length,0);
+ assert.equal(a.winners.length,100);assert.equal(a.mechanisms.items[0].held.length,0);assert.equal(a.mechanisms.items[0].motion.passedThroat.size,100);
  assert.ok(elevated,'the stairs must physically lift contenders');assert.ok(insideBowl,'contenders must pass through the funnel');
  assert.deepEqual(a.winners,b.winners);assert.deepEqual(a.status,b.status);assert.deepEqual(a.s,b.s);assert.deepEqual(a.x,b.x);
+});
+
+test('the covered outer rim retains a fast outward rebound until it reaches the central throat',()=>{
+ const r=createRace(),g=geometry(r),radius=r.mechanisms.items[0].p.radius;
+ const h=addBall(r,0,{x:g.bowlX-radius+RADIUS+.01,z:BOWL_CENTER,y:g.lipY+.8,vx:-9,vz:0,enteredBowl:true,passedThroat:false});
+ for(let n=0;n<180;n++){advance(r);assert.ok(Math.hypot(h.x-g.bowlX,h.z-BOWL_CENTER)<radius+.01,'an outer-rim rebound must remain enclosed');}
+ assert.equal(r.status[0],5,'rim contact cannot count as release');
+});
+test('both sides of the last stair feed the narrow collector and all releases pass the bottom throat',()=>{
+ const r=createRace(5),g=geometry(r),balls=[];
+ for(const [i,x] of [-9,-5,0,5,9].entries())balls.push(addBall(r,i,{x:x+g.deckPolygons[0][0][0]+10.2,z:g.deckFront+.1,y:g.deckY(g.deckFront+.1)+RADIUS+.05,vz:2,stage:'walk',enteredBowl:false,passedThroat:false}));
+ for(let n=0;n<90*360&&r.mechanisms.items[0].held.length;n++)advance(r);
+ assert.equal(r.mechanisms.items[0].held.length,0,'collector edges must not leave contenders under the deck');
+ assert.ok(balls.every(b=>b.enteredBowl&&b.passedThroat),'every release must travel through the actual bowl and its small lower outlet');
 });

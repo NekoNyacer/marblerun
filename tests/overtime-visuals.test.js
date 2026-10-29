@@ -2,7 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
 import overtime from '../src/components/obstacles/overtime-stairs.js';
-import {BOWL_CENTER,STAIR_START,STAIR_DEPTH,STAIR_GEAR_RATIO,STAIR_SLOPE,THROAT_RADIUS,stairHeight,overtimeGeometry} from '../src/overtime-geometry.js';
+import {BOWL_CENTER,STAIR_START,STAIR_DEPTH,STAIR_GEAR_RATIO,STAIR_SLOPE,THROAT_RADIUS,GUARD_HEIGHT,stairHeight,overtimeGeometry} from '../src/overtime-geometry.js';
 import {center,elevation} from '../src/track-geometry.js';
 
 function makeView(s,phase=0,params={}){
@@ -63,7 +63,7 @@ test('finite-height glass ascent walls follow both curved rail bounds and join w
     minZ=Math.min(minZ,z);maxZ=Math.max(maxZ,z);
     const outward=(x-inner)*side;
     assert.ok(Math.abs(outward)<2e-6||Math.abs(outward-.18)<2e-6,'glass wall must start exactly at the physical rail bound');
-    assert.ok(Math.abs(y-(g.high+3))<2e-6||Math.abs(y-(elevation(s+z)-g.base-.2))<2e-6,'glass wall must share the finite physical height');
+    assert.ok(Math.abs(y-(g.guardTop-g.base))<2e-6||Math.abs(y-(elevation(s+z)-g.base-.2))<2e-6,'glass wall must share the finite physical height');
    }
    assert.ok(Math.abs(minZ-STAIR_START)<2e-6);
    assert.ok(Math.abs(maxZ-g.deckStart)<2e-6);
@@ -88,14 +88,14 @@ test('the tapered deck and guide walls use the physical approach endpoints and s
   for(let i=0;i<18;i+=3){
    const x=vertices[i],z=-vertices[i+2],distance=Math.abs((z2-z1)*(x-x1)-(x2-x1)*(z-z1))/Math.hypot(x2-x1,z2-z1);
    assert.ok(Math.abs(distance-.09)<2e-6,'guide mesh must share the contact wall centerline and thickness');
-   assert.ok(Math.abs(vertices[i+1]+g.base-g.deckY(z)-1.05)<2e-6);
+   assert.ok(Math.abs(vertices[i+1]+g.base-g.guardTop)<2e-6);
   }
   assert.ok(rail.geometry.attributes.normal.getY(0)>.9);
  }
 });
 
 test('stationary hourglass shells connect at the physical throat and match its lip and exit heights',()=>{
- for(const radius of [3.5,5,5.5])for(const rise of [.6,1.05]){
+ for(const radius of [3.5,5,7])for(const rise of [.6,1.05]){
   const {view,p,g}=makeView(316,7,{radius,rise}),upper=view.upperFunnel,lower=view.lowerFunnel;
   assert.equal(upper.geometry.parameters.radiusTop,p.radius);
   assert.equal(upper.geometry.parameters.radiusBottom,THROAT_RADIUS);

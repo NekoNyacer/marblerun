@@ -1,0 +1,79 @@
+{
+  "model": "banyan-constrained-rolling-v6",
+  "count": 8,
+  "quota": 3,
+  "seed": 906,
+  "elapsed": 55.56666666666667,
+  "course": [
+    {
+      "id": "stairs",
+      "type": "overtime-stairs",
+      "s": 50,
+      "phase": 0,
+      "label": "電梯故障・加班沙漏",
+      "params": {
+        "period": 2.4,
+        "rise": 1.05,
+        "amplitude": 0.65,
+        "orbit": 5,
+        "radius": 5
+      }
+    },
+    {
+      "id": "finish",
+      "type": "finish",
+      "s": 430,
+      "phase": 0,
+      "label": "DEPLOY SUCCESS",
+      "params": {}
+    }
+  ],
+  "participants": [
+    {
+      "id": "v6-0",
+      "name": "v6 0"
+    },
+    {
+      "id": "v6-1",
+      "name": "v6 1"
+    },
+    {
+      "id": "v6-2",
+      "name": "v6 2"
+    },
+    {
+      "id": "v6-3",
+      "name": "v6 3"
+    },
+    {
+      "id": "v6-4",
+      "name": "v6 4"
+    },
+    {
+      "id": "v6-5",
+      "name": "v6 5"
+    },
+    {
+      "id": "v6-6",
+      "name": "v6 6"
+    },
+    {
+      "id": "v6-7",
+      "name": "v6 7"
+    }
+  ],
+  "winners": [
+    {
+      "id": "v6-2",
+      "time": 55.16974162070765
+    },
+    {
+      "id": "v6-5",
+      "time": 55.47801480235774
+    },
+    {
+      "id": "v6-4",
+      "time": 55.5613071605344
+    }
+  ]
+}

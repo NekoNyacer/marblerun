@@ -1,3 +1,4 @@
+import {simSin,simCos,simAtan2,simHypot} from './deterministic-math.js';
 import {WIDTH,RADIUS,rng} from './world.js';
 import {OvertimeMotion} from './overtime-motion.js';
 
@@ -50,7 +51,7 @@ export class MechanismRuntime {
   for(let n=0;n<item.held.length;n++){
     const i=item.held[n],cols=Math.min(20,Math.max(1,capacity)),rows=Math.max(1,Math.floor((p.depth-1)/.8));
    r.x[i]=(n%cols-(cols-1)/2)*.83+(o.x??0);r.s[i]=o.s+((Math.floor(n/cols)%rows)-(rows-1)/2)*.8;
-   r.vertical[i]=-.25+Math.sin(lift*Math.PI/2)*1.65;
+   r.vertical[i]=-.25+simSin(lift*Math.PI/2)*1.65;
   }
   if(lift>=1){
    const released=item.held.length;
@@ -64,12 +65,12 @@ export class MechanismRuntime {
   const r=this.race,{o,p}=item;
   for(const h of item.held){
    const age=r.t-h.at,progress=clamp(age/(h.releaseAt-h.at),0,1),radius=p.radius*(.85-.42*progress),angle=h.angle+age*(2.1+h.spin*.7);
-   r.x[h.i]=(o.x??0)+Math.cos(angle)*radius;r.s[h.i]=o.s+Math.sin(angle)*radius*.52;r.vertical[h.i]=-.22-.12*progress;
+   r.x[h.i]=(o.x??0)+simCos(angle)*radius;r.s[h.i]=o.s+simSin(angle)*radius*.52;r.vertical[h.i]=-.22-.12*progress;
   }
   if(r.t>=item.nextRelease){
    let ready=null;for(const h of item.held)if(h.releaseAt<=r.t&&(!ready||h.releaseAt<ready.releaseAt))ready=h;
    if(ready){
-    const i=ready.i;r.status[i]=0;r.x[i]=(o.x??0)+Math.sin(ready.angle)*2.1;r.s[i]=o.s+p.radius+RADIUS+1;r.vs[i]=7;r.vx[i]=Math.sin(ready.angle)*1.4;r.vertical[i]=0;
+    const i=ready.i;r.status[i]=0;r.x[i]=(o.x??0)+simSin(ready.angle)*2.1;r.s[i]=o.s+p.radius+RADIUS+1;r.vs[i]=7;r.vx[i]=simSin(ready.angle)*1.4;r.vertical[i]=0;
     item.held.splice(item.held.indexOf(ready),1);item.nextRelease=r.t+p.releaseInterval;r.emit({type:'vortex-release',i,obstacle:o.label});
    }
   }
@@ -85,7 +86,7 @@ export class MechanismRuntime {
    }else if(o.type==='node-hole'){
     for(const hole of item.holes){
      const capacity=Math.max(1,Math.ceil(p.capacity));
-     if(hole.owners.length<capacity&&Math.hypot(r.x[i]-hole.x,ds)<p.radius*.82){this.capture(item,i,2,'Node.js 漏洞：填補小坑');hole.owners.push(i);item.filled++;r.x[i]=hole.x;r.s[i]=hole.s;r.vertical[i]=-.25;return;}
+     if(hole.owners.length<capacity&&simHypot(r.x[i]-hole.x,ds)<p.radius*.82){this.capture(item,i,2,'Node.js 漏洞：填補小坑');hole.owners.push(i);item.filled++;r.x[i]=hole.x;r.s[i]=hole.s;r.vertical[i]=-.25;return;}
     }
    }else if(o.type==='java-hole'){
     if(item.phase!=='released'&&item.fullAt===null&&Math.abs(ds)<p.depth/2&&Math.abs(dx)<WIDTH/2){
@@ -95,7 +96,7 @@ export class MechanismRuntime {
     }
    }else if(o.type==='dotnet-hole'){
     if(!item.seen.has(i)&&dx*dx+ds*ds<p.radius*p.radius){
-     this.capture(item,i,4);item.seen.add(i);const spin=this.random(),duration=p.hold*(.75+this.random());item.held.push({i,at:r.t,releaseAt:r.t+duration,angle:Math.atan2(ds/.65,dx),spin});item.filled++;item.phase='swirling';r.emit({type:'vortex-enter',i,obstacle:o.label});return;
+     this.capture(item,i,4);item.seen.add(i);const spin=this.random(),duration=p.hold*(.75+this.random());item.held.push({i,at:r.t,releaseAt:r.t+duration,angle:simAtan2(ds/.65,dx),spin});item.filled++;item.phase='swirling';r.emit({type:'vortex-enter',i,obstacle:o.label});return;
     }
    }
   }

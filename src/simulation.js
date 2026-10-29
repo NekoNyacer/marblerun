@@ -1,3 +1,4 @@
+import {simSin} from './deterministic-math.js';
 import {createCourse} from './course.js';
 import {WIDTH,RADIUS,FINISH,STEP,rng,shuffled,center,centerSlope,OBSTACLES} from './world.js';
 import {courseShapes,contactFor,surfaceVelocity} from './obstacles.js';
@@ -43,7 +44,7 @@ export class RaceSimulation{
   for(let i=0;i<this.count;i++){
    if(this.finish[i]>=0||this.status[i]!==0)continue;this.previousX[i]=this.worldX(i);this.previousS[i]=this.s[i];
    this.vs[i]+=(2.65-this.vs[i]*.24)*dt;
-   this.vx[i]+=(-Math.sin(this.s[i]/52)*this.vs[i]*this.vs[i]*.0026-this.vx[i]*.48)*dt;
+   this.vx[i]+=(-simSin(this.s[i]/52)*this.vs[i]*this.vs[i]*.0026-this.vx[i]*.48)*dt;
    this.x[i]+=this.vx[i]*dt;this.s[i]+=this.vs[i]*dt;this.boundary(i);this.mechanisms.enterStairs(i);if(this.status[i]!==0)continue;this.resolveObstacles(i);this.mechanisms.detect(i);
   }
   // Local-neighbour collisions in the SAME world plane used by obstacle geometry.

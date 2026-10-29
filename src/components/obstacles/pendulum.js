@@ -1,9 +1,10 @@
+import {simSin,simCos} from '../../deterministic-math.js';
 export default {
  type: 'pendulum', label: 'TIMEOUT',
  defaults: {amplitude: 7, speed: 1.3, radius: 1.05},
  build(ctx, p, t, phase) {
   [-10.5, 10.5].forEach((x, j) => ctx.post(`post${j}`, x, 7));
-  ctx.add('head', 'sphere', Math.sin(t * p.speed + phase) * p.amplitude, 0, .04, p.radius * 2, {r: p.radius, vx: Math.cos(t * p.speed + phase) * p.amplitude * p.speed, role: 'pendulum', materialKey: 'amber'});
+  ctx.add('head', 'sphere', simSin(t * p.speed + phase) * p.amplitude, 0, .04, p.radius * 2, {r: p.radius, vx: simCos(t * p.speed + phase) * p.amplitude * p.speed, role: 'pendulum', materialKey: 'amber'});
  },
  decorate(view) {
   const {host, decor} = view;

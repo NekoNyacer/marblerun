@@ -85,7 +85,7 @@ export class RaceScene{
   for(let i=0;i<data.length/4;i++){
    if(this.racerStatus?.[i]===1)continue;let x=data[i*4],s=data[i*4+1];if(s<this.focusS-45||s>this.focusS+110)continue;const corrected=(this.racerStatus?.[i]??0)===0?projectVisualBall(center(s)+x,s,frameGroups):{wx:center(s)+x,s};s=corrected.s;x=corrected.wx-center(s);data[i*4]=x;data[i*4+1]=s;
    const p=position(s,x),vertical=verticalAt(i);this.sphere.center.set(p[0],p[1]+RADIUS+vertical,p[2]);if(!this.frustum.intersectsSphere(this.sphere))continue;
-   dummy.position.copy(this.sphere.center);dummy.rotation.set(-s/RADIUS,x/RADIUS,0);dummy.scale.setScalar(1);dummy.updateMatrix();this.balls.setMatrixAt(visible,dummy.matrix);this.color.set(PALETTE[i%PALETTE.length]);this.balls.setColorAt(visible,this.color);
+   dummy.position.copy(this.sphere.center);dummy.rotation.set(-s/RADIUS,x/RADIUS,0);dummy.scale.setScalar(1);dummy.updateMatrix();this.balls.setMatrixAt(visible,dummy.matrix);this.color.set(this.participants[i]?.color??PALETTE[i%PALETTE.length]);this.balls.setColorAt(visible,this.color);
    dummy.position.y=p[1]+.035;dummy.rotation.set(-Math.PI/2,0,0);dummy.scale.setScalar((this.racerStatus?.[i]??0)>1?0:1);dummy.updateMatrix();this.shadows.setMatrixAt(visible,dummy.matrix);visible++;
   }
   this.balls.count=visible;this.shadows.count=visible;this.balls.instanceMatrix.needsUpdate=true;this.shadows.instanceMatrix.needsUpdate=true;if(this.balls.instanceColor)this.balls.instanceColor.needsUpdate=true;
@@ -93,7 +93,7 @@ export class RaceScene{
   const w=this.container.clientWidth,h=this.container.clientHeight,rects=[];
   for(let n=0;n<this.labels.length;n++){
    const el=this.labels[n],i=rank[n];if(i===undefined){el.hidden=true;continue;}const s=data[i*4+1],p=position(s,data[i*4]);this.v.set(p[0],p[1]+1.25+verticalAt(i),p[2]).project(this.camera);const xx=(this.v.x*.5+.5)*w,yy=(-this.v.y*.5+.5)*h;const overlap=rects.some(r=>Math.abs(r.x-xx)<115&&Math.abs(r.y-yy)<48);
-   const hidden=this.v.z>1||this.v.z<0||xx<60||xx>w-60||yy<80||yy>h-65||overlap;el.hidden=hidden;if(hidden)continue;rects.push({x:xx,y:yy});el.style.left=xx+'px';el.style.top=yy+'px';el.style.setProperty('--racer',PALETTE[i%PALETTE.length]);el.textContent=`${n+1} ${this.participants[i]?.name||''}`;
+   const hidden=this.v.z>1||this.v.z<0||xx<60||xx>w-60||yy<80||yy>h-65||overlap;el.hidden=hidden;if(hidden)continue;rects.push({x:xx,y:yy});el.style.left=xx+'px';el.style.top=yy+'px';el.style.setProperty('--racer',this.participants[i]?.color??PALETTE[i%PALETTE.length]);el.textContent=`${n+1} ${this.participants[i]?.name||''}`;
   }
   this.renderer.render(this.scene,this.camera);this.onStats?.(visible);
  }

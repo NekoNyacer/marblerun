@@ -1,11 +1,12 @@
+import {simSin,simCos,simAtan2,simHypot} from '../../deterministic-math.js';
 import {center} from '../../track-geometry.js';
 
 function card(ctx,id,x1,s1,x2,s2,p,materialKey){
  const ax=center(ctx.o.s+s1)+x1,bx=center(ctx.o.s+s2)+x2,dx=bx-ax,ds=s2-s1;
- const length=Math.hypot(dx,ds),angle=Math.atan2(ds,dx),x=(ax+bx)/2-ctx.origin,s=(s1+s2)/2;
+ const length=simHypot(dx,ds),angle=simAtan2(ds,dx),x=(ax+bx)/2-ctx.origin,s=(s1+s2)/2;
  const half=(length-p.thickness)/2;
  ctx.box(id,x,s,.04,p.height,length-p.thickness,p.thickness,{angle,role:'ux-card',materialKey});
- for(const side of [-1,1])ctx.add(`${id}-cap${side}`,'circle',x+side*half*Math.cos(angle),s+side*half*Math.sin(angle),.04,p.height,{r:p.thickness/2,role:'ux-card',materialKey});
+ for(const side of [-1,1])ctx.add(`${id}-cap${side}`,'circle',x+side*half*simCos(angle),s+side*half*simSin(angle),.04,p.height,{r:p.thickness/2,role:'ux-card',materialKey});
 }
 
 export default {

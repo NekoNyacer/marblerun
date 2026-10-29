@@ -1,0 +1,27 @@
+/* Team controls inherit the event's green/white operating interface. */
+#settings-dialog{width:640px}
+#team-fields{border:0;padding:0;margin:4px 0 22px;min-width:0}
+#team-fields legend{font-size:17px;font-weight:700;margin-bottom:4px}
+#team-demo-btn{padding:6px 0;margin-bottom:18px;text-align:left}
+.team-name-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px 20px}
+.team-name-row{display:grid;grid-template-columns:20px auto minmax(0,1fr);align-items:center;gap:9px;min-width:0}
+.team-name-row label{font-size:12px;white-space:nowrap}
+.team-name-row input{width:100%;min-width:0;border:1px solid #bdcfc0;border-radius:7px;background:#fff;color:var(--ink);padding:9px 10px;font:inherit}
+.team-total{font-size:13px;font-weight:650;margin:18px 0;color:var(--deep);font-variant-numeric:tabular-nums}
+.team-board{flex:none;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin:0 0 12px;padding:10px 0}
+.team-board>p{font-size:11px;margin:0 0 8px;color:var(--deep);font-variant-numeric:tabular-nums}
+.team-standings{max-height:208px;overflow:auto}
+.team-score-row,.team-result-row{display:grid;grid-template-columns:20px minmax(0,1fr) auto auto;align-items:center;gap:8px;padding:7px 3px;font-size:12px;font-variant-numeric:tabular-nums}
+.team-score-row strong,.team-result-row strong{overflow-wrap:anywhere;min-width:0}
+.team-score-row small,.team-result-row small{font-size:10px;color:#526f5d;min-width:66px;text-align:right}
+.team-score-row .marble-dot{width:17px;height:17px}
+.team-result-row{padding:12px 8px;border-bottom:1px solid var(--line);font-size:15px}
+.team-result-row:first-child{background:#e9f4df;border-radius:8px}
+.team-result-row small{font-size:12px}
+#team-results{margin:16px 0 24px}
+#team-results+.result-list{border-top:1px solid var(--line);padding-top:12px}
+:where(input,select,button):focus-visible{outline:3px solid #00894f;outline-offset:3px}
+::selection{background:#b8e9cb;color:#123f32}
+input{caret-color:var(--green)}
+.team-standings{scrollbar-color:#8ab5a0 #f2f6ef;scrollbar-width:thin}
+@media(max-width:480px){.team-name-fields{grid-template-columns:1fr}.team-name-row{grid-template-columns:20px 55px minmax(0,1fr)}.team-score-row{font-size:13px}.team-result-row{gap:7px;font-size:14px}}

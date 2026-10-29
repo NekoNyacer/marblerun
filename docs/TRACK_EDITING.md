@@ -60,7 +60,7 @@ localStorage 不會跨瀏覽器或跨網址同步；清除網站資料也會刪�
 
 修改本機關後，執行 `node --test tests/overtime-stairs.test.js tests/overtime-visuals.test.js tests/replay.test.js`，並以完整測試及大量參賽者賽事確認全員可通行。幾何測試應檢查各相位階梯頂面與固定底座、平台斜度、導流欄端點，以及上下漏斗的半徑與世界高度；物理測試應檢查速度傳遞、重力落下、球間碰撞及種子可重現性。GPU 瀏覽器中的穿透、鏡頭及投影可讀性需另行檢查。
 
-新賽事使用 `banyan-constrained-rolling-v6`；舊 v1 至 v5 紀錄由各自凍結的舊引擎重播，v5 完整保留在 `src/legacy/v5/`。現行賽事略過已下架的舊機關。畫面讀取同一份機關狀態；得獎順序仍以實際過線決定。下載的賽事紀錄包含賽道配置、物理版本與種子，重播使用紀錄快照：
+新賽事使用 `banyan-constrained-rolling-v7`；舊 v1 至 v6 紀錄由各自凍結的舊引擎重播，v6 完整保留在 `src/legacy/v6/`。現行賽事略過已下架的舊機關。畫面讀取同一份機關狀態；得獎順序仍以實際過線決定。下載的賽事紀錄包含賽道配置、物理版本與種子，重播使用紀錄快照：
 
 ```sh
 node scripts/replay.mjs "賽事紀錄-種子.json"
@@ -71,3 +71,7 @@ node scripts/replay.mjs "賽事紀錄-種子.json"
 ## GitHub Pages 純靜態部署
 
 不需要後端、資料庫或 API 金鑰。`npm ci` 後執行 `npm run build`，發布 `dist/` 即可。Vite 使用相對資源路徑，支援 GitHub Pages 專案子路徑與自訂網域。Pages 工作流程會在 `main` 更新時建置發布；賽道、名單與得獎紀錄仍保存在各訪客瀏覽器。
+
+## v7 封閉匯集道與出口
+
+預設漏斗半徑為 7、喉口半徑 .56；匯集道寬 1.68、窄道長 6.8。`deckPolygons`、`guides` 和 `guardTop` 同時供繪圖與物理使用，窄道護欄在外緣接合，頂蓋連續銜接階梯、匯集道與漏斗。只有實際通過中央喉口再落地才放行，外緣接觸不會結束機關狀態。喉口的旋轉銷使用 `throatSweeper` 位置與表面速度解接觸，防止多球拱橋永遠封住出口。

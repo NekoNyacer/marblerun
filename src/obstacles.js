@@ -1,3 +1,4 @@
+import {simSin,simCos,simHypot} from './deterministic-math.js';
 // Generic collision adapter: components own their geometry and movement.
 import {OBSTACLES,RADIUS,elevation} from './world.js';
 import {resolveObstacle} from './components/obstacles/index.js';
@@ -30,10 +31,10 @@ export function contactFor(shape,wx,s,r=RADIUS,previous=null){
  const dx=wx-shape.wx,ds=s-shape.s;
  if(shape.kind!=='box'){
   const limit=shape.kind==='sphere'?radius:radius+shape.r,d2=dx*dx+ds*ds;if(d2>=limit*limit)return null;
-  const d=Math.sqrt(d2);let nx,ns;if(d>1e-8){nx=dx/d;ns=ds/d;}else{const px=previous?previous.wx-shape.wx:0,ps=previous?previous.s-shape.s:-1,n=Math.hypot(px,ps)||1;nx=px/n;ns=ps/n;}
+  const d=Math.sqrt(d2);let nx,ns;if(d>1e-8){nx=dx/d;ns=ds/d;}else{const px=previous?previous.wx-shape.wx:0,ps=previous?previous.s-shape.s:-1,n=simHypot(px,ps)||1;nx=px/n;ns=ps/n;}
   return {nx,ns,depth:limit-d};
  }
- const c=Math.cos(shape.angle),a=Math.sin(shape.angle),u=dx*c+ds*a,v=-dx*a+ds*c,hw=shape.w/2,hd=shape.d/2;
+ const c=simCos(shape.angle),a=simSin(shape.angle),u=dx*c+ds*a,v=-dx*a+ds*c,hw=shape.w/2,hd=shape.d/2;
  let nu=u-Math.max(-hw,Math.min(hw,u)),nv=v-Math.max(-hd,Math.min(hd,v));const d2=nu*nu+nv*nv;if(d2>=radius*radius)return null;
  let depth;if(d2>1e-12){const d=Math.sqrt(d2);nu/=d;nv/=d;depth=radius-d;}else{
   // Keep an embedded body on its incoming side, including dense packs pushing against a gate.

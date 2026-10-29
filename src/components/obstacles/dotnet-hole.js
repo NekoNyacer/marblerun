@@ -1,8 +1,9 @@
+import {simAtan2,simHypot} from '../../deterministic-math.js';
 import {center} from '../../track-geometry.js';
 import {disc,ring,pitMaterial,statusSign,setStatus} from './hazard-visuals.js';
 export default {
  type:'dotnet-hole',label:'.NET 漏洞 · 加班沙漏',defaults:{radius:7.6,hold:5,releaseInterval:.22},
- build(ctx,p){for(const side of [-1,1]){const ds=-p.radius-1.5,a={x:center(ctx.o.s+ds-2)+side*10.6,s:ds-2},b={x:center(ctx.o.s+ds+2)+side*5.8,s:ds+2},dx=b.x-a.x,dz=b.s-a.s;ctx.box(`funnel-guide${side}`,(a.x+b.x)/2-ctx.origin,ds,.02,.85,Math.hypot(dx,dz),.5,{angle:Math.atan2(dz,dx),role:'guide',materialKey:'deep'});}},
+ build(ctx,p){for(const side of [-1,1]){const ds=-p.radius-1.5,a={x:center(ctx.o.s+ds-2)+side*10.6,s:ds-2},b={x:center(ctx.o.s+ds+2)+side*5.8,s:ds+2},dx=b.x-a.x,dz=b.s-a.s;ctx.box(`funnel-guide${side}`,(a.x+b.x)/2-ctx.origin,ds,.02,.85,simHypot(dx,dz),.5,{angle:simAtan2(dz,dx),role:'guide',materialKey:'deep'});}},
  decorate(view,p){
   const {host,decor}=view,T=host.graphics;disc(view,0,0,p.radius,pitMaterial(view));ring(view,0,0,p.radius,host.materials.amber,.08,.13);ring(view,0,0,1.15,host.materials.light,.1,.12);
   const funnelMat=new T.MeshBasicMaterial({color:0x57d5c5,wireframe:true,transparent:true,opacity:.22,depthWrite:false});view.funnel=host.mesh(new T.CylinderGeometry(p.radius,1.15,2.5,24,3,true),funnelMat,decor);view.funnel.position.y=2.95;view.lowerFunnel=host.mesh(new T.CylinderGeometry(1.15,p.radius*.7,1.6,24,2,true),funnelMat,decor);view.lowerFunnel.position.y=.9;

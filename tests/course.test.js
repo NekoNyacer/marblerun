@@ -53,3 +53,8 @@ test('retired hazards are retained in saved documents but skipped by new races',
  assert.deepEqual(createCourse(entries).map(o=>o.type),['finish']);
  assert.deepEqual(entries.slice(0,4).map(o=>o.type),types);
 });
+
+test('saved tracks carrying the previous hourglass default receive the larger v7 bowl',()=>{
+ const old=[{id:'old-stairs',type:'overtime-stairs',s:100,params:{radius:5}},{id:'finish',type:'finish',s:430}],source=structuredClone(old),course=createCourse(old);
+ assert.equal(course[0].params.radius,7);assert.deepEqual(old,source,'stored source configuration must not be mutated');
+});
